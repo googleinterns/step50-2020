@@ -107,11 +107,11 @@
     <div class="header">
       <% User user = null;
         if (session.getAttribute("userID") != null) {
-            user = Database.getUserByID((long) session.getAttribute("userID")); 
-        } else {
-          response.sendRedirect("login.jsp");  
+            user = Database.getUserByID((long) session.getAttribute("userID")); %>
+            <%= user.getNickname() %>
+        <% } else {
+          response.sendRedirect("/login.jsp");  
         } %>
-        <%= user.getNickname() %>
     </div>
     <div class="operations">
       Language:
