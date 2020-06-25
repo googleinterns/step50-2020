@@ -7,8 +7,9 @@
     <title>Collaborative Text Editor</title>
     <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/javascript/javascript.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
+    <script src="mode/python/python.js"></script>
+    <script src="mode/javascript/javascript.js"></script>
+    <script src="mode/go/go.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/ayu-dark.css" />
@@ -118,6 +119,7 @@
       <select onchange="changeLanguage()" id="selectLang">
         <option selected>python</option>
         <option>javascript</option>
+        <option>go</option>
       </select>
       Theme:
       <select onchange="changeTheme()" id="selectTheme">
