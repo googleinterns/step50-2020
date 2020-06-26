@@ -10,7 +10,7 @@ export class DropdownElement extends LitElement {
   static get properties() {
     return {
       options: {type: Array},
-      id: {type: String},
+      name: {type: String},
       label: {type: String},
       changeLabel: {type: Boolean},
       showDropdown: {type: String},
@@ -22,7 +22,7 @@ export class DropdownElement extends LitElement {
   constructor() {
     super();
     this.options = [];
-    this.id = '';
+    this.name = '';
     this.label = '';
     this.changeLabel = true;
     this.showDropdown = false;
@@ -44,13 +44,13 @@ export class DropdownElement extends LitElement {
     }
   }
 
-  render() {
+  /*render() {
     let dropdownState = this.showDropdown ? 'is-active' : '';
     return html`        
-      <div class=${'dropdown ' + dropdownState + ' ' + this.styling} id=${
-        this.id}>
+      <select class=${'dropdown ' + dropdownState + ' ' + this.styling} name=${
+        this.name}>
         <div class=${'dropdown-trigger ' + this.styling}>
-          <button class=${'button ' + this.styling} @click=${
+          <button type="button" class=${'button ' + this.styling} @click=${
         this.toggleDropdown} aria-haspopup="true" aria-controls="dropdown-menu">
             <span>${this.label}</span>
             <span class="icon is-small">
@@ -58,19 +58,26 @@ export class DropdownElement extends LitElement {
             </span>
           </button>
         </div>
-        <div class="${
-                              'dropdown-menu ' +
-        this.styling}" id="dropdown-menu" role="menu">
+        <div class=${"dropdown-menu" + this.styling} id="dropdown-menu" role="menu">
           <div class="dropdown-content">
-            ${
-        this.options.map(
-            (option) => html`
-                <a href="#" @click=${
-                () => this.toggleSelectedItem(
-                    option)} class="dropdown-item"> ${option} </a>
+            ${this.options.map((option) => html`
+                <option class="dropdown-item"> ${option} </option>
               `)}
           </div>
         </div>
+      </div>
+    `;
+  }*/
+  render() {
+    return html`        
+        <select name=${this.name} class=${"dropdown dropdown-border " + this.styling}>
+        <div class="dropdown-menu">
+          <div class="dropdown-content">
+            ${this.options.map((option) => html`
+                <option class="dropdown-item" value=${option}> ${option} </option>
+              `)}
+          </div>
+          </div>
       </div>
     `;
   }
