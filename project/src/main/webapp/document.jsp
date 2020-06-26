@@ -1,44 +1,20 @@
 <%@ page language="java" contentType="text/html" pageEncoding="UTF-8" %>
 <%@ page import="com.google.sps.models.*" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Log In</title>
-    <link rel="stylesheet" href="main.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css">
-    <% User user = null;
-    if (session.getAttribute("userID") != null) {
-        user = Database.getUserByID((long) session.getAttribute("userID")); 
-    } %>
-  </head>
-    
-  <body onload="load()">
-
-    <div class="columns is-centered is-vcentered" id="login-columns">
-      <div class="column is-narrow">
-        <div class="box has-text-centered" id="center-container">
-          <p id="title"> Collaborative Text Editor </p>
-          <p id="description"> A collaborative code editor where you can work on code snippets in sync</p>
-          <div id="signin-buttons">
-          <a href="/"><button id="demo-button"> Demo </button></a>
-          </div>
-        </div> 
-      </div>
-      
     <meta charset="utf-8" />
     <title>Collaborative Text Editor</title>
     <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
-    <script src="mode/python/python.js"></script>
-    <script src="mode/javascript/javascript.js"></script>
-    <script src="mode/go/go.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/javascript/javascript.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/ayu-dark.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/neo.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/monokai.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css">
     <script src="https://firepad.io/releases/v1.5.9/firepad.min.js"></script>
     <link rel="stylesheet" href="style.css" />
     <script src="script.js"></script>
@@ -128,22 +104,25 @@
     </style>
   </head>
 
-  <body onload="init()">
+  <body onload="init(); getHash()">
     <div class="header">
       <% User user = null;
+         Document document = null;
         if (session.getAttribute("userID") != null) {
-            user = Database.getUserByID((long) session.getAttribute("userID")); %>
-            <%= user.getNickname() %>
+            user = Database.getUserByID((long) session.getAttribute("userID"));
+            document = Database.getDocumentByHash((String)request.getAttribute("documentHash")); %>
+            <%= document.getName(); %>
         <% } else {
-          response.sendRedirect("/login.jsp");  
+          response.sendRedirect("/");  
         } %>
+
+        
     </div>
     <div class="operations">
       Language:
       <select onchange="changeLanguage()" id="selectLang">
         <option selected>python</option>
         <option>javascript</option>
-        <option>go</option>
       </select>
       Theme:
       <select onchange="changeTheme()" id="selectTheme">
@@ -151,6 +130,65 @@
         <option>ayu-dark</option>
         <option>monokai</option>
       </select>
+    </div>
+    <div id="firepad-container"></div>
 
+    <script>
+      //// Create CodeMirror (with line numbers and the JavaScript mode).
+      var codeMirror = CodeMirror(document.getElementById("firepad-container"), {
+        lineNumbers: true,
+        mode: "python",
+        theme: "neo",
+      })
+
+      function init() {
+        //// Initialize Firebase.
+        //// TODO: replace with your Firebase project configuration.
+        var config = {
+            apiKey: 'AIzaSyDUYns7b2bTK3Go4dvT0slDcUchEtYlSWc',
+            authDomain: "step-collaborative-code-editor.firebaseapp.com",
+            databaseURL: "https://step-collaborative-code-editor.firebaseio.com"
+        };
+        firebase.initializeApp(config);
+
+        //// Get Firebase Database reference.
+        var firepadRef = getExampleRef()
+        //// Create Firepad.
+        var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror)
+      }
+
+      function changeTheme() {
+        var input = document.getElementById("selectTheme")
+        var theme = input.options[input.selectedIndex].textContent
+        codeMirror.setOption("theme", theme)
+      }
+
+      function changeLanguage() {
+        var input = document.getElementById("selectLang")
+        var lang = input.options[input.selectedIndex].textContent
+        codeMirror.setOption("mode", lang)
+      }
+
+      // Helper to get hash from end of URL or generate a random one.
+      function getExampleRef() {
+        var ref = firebase.database().ref()
+        var hash = window.location.hash.replace(/#/g, "")
+        if (hash) {
+          ref = ref.child(hash)
+        } else {
+          ref = ref.push() // generate unique location.
+          window.location = window.location + "#" + ref.key // add it as a hash to the URL.
+        }
+        if (typeof console !== "undefined") {
+          console.log("Firebase data: ", ref.toString())
+        }
+        return ref
+      }
+
+      //Get hash of current document
+      function getHash() {
+        return window.location.hash.substr(2);
+      }
+    </script>
   </body>
 </html>

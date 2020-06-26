@@ -30,6 +30,14 @@ public class UserServlet extends HttpServlet {
     } else {
       request.getSession(false).invalidate();
     }
+
+//     String hash = "MAYYw2CqGI_NOJIi4su";
+//     request.setAttribute("documentHash", hash);
+//     try {
+//       request.getRequestDispatcher("/document.jsp#-" + hash).forward(request, response);
+//     } catch (Exception e) {
+//       response.sendRedirect("/");
+//     }
     response.sendRedirect("/user-home.html");
   }
 }

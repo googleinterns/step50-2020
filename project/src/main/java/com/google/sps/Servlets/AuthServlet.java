@@ -23,14 +23,13 @@ public class AuthServlet extends HttpServlet {
       String userEmail = userService.getCurrentUser().getEmail();
       String urlToRedirectToAfterUserLogsOut = "/User";
       String logoutUrl = userService.createLogoutURL(urlToRedirectToAfterUserLogsOut);
-      out.println(
-          "<a href=" + logoutUrl + "><button>Log Out</button></a>");
+      out.println("<a href=" + logoutUrl + "><button>Sign out</button></a>");
     } else {
       String urlToRedirectToAfterUserLogsIn = "/User";
       String loginUrl = userService.createLoginURL(urlToRedirectToAfterUserLogsIn);
 
-      out.println(
-          "<a href=" + loginUrl + "><button>Log In</button></a>");
+      out.println("<a href=" + loginUrl
+          + "><button><i class=\"fab fa-google\"></i> Sign in with Google</button></a>");
     }
   }
 }
