@@ -30,6 +30,6 @@ public class UserServlet extends HttpServlet {
     } else {
       request.getSession(false).invalidate();
     }
-    response.sendRedirect("/#-MAYYw2CqGI_NOJIi4su");
+    response.sendRedirect("/user-home.html");
   }
 }
