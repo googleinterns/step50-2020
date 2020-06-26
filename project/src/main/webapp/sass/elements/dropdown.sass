@@ -1,6 +1,12 @@
 .dropdown-border
   @extend .white-btn
-  font-weight: weight-normal
+  font-weight: $weight-normal
+  .dropdown-item
+    outline: none
+    &:focus
+      outline: none
+    &:hover
+      outline: none
 
 .dropdown-borderless
   @extend .dropdown-border

@@ -1,9 +1,9 @@
 package com.google.sps.models;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-public class User{
+public class User {
   String email, nickname;
   long userID;
   ArrayList<String> docHashes = new ArrayList<String>();
@@ -22,7 +22,7 @@ public class User{
   public String getNickname() {
     return nickname;
   }
- 
+
   public String getEmail() {
     return email;
   }

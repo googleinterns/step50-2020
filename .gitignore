@@ -8,3 +8,6 @@ target/
 
 # Ignore editor config
 .idea
+
+# Ignore main.css
+project/src/main/webapp/main.css

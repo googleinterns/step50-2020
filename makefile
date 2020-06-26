@@ -18,5 +18,9 @@ validate: node_modules
 	$(CSS_VALIDATOR) project/src/main/webapp/*.css
 	$(ESLINT) project/src/main/webapp/*.js
 
+validate-components: node_modules
+	$(ESLINT) project/src/main/webapp/components/*.js
+	$(ESLINT) project/src/main/webapp/components/user-home/*.js
+
 package:
 	mvn package
