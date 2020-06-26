@@ -159,7 +159,7 @@ public class Database {
     return userIDs;
   } 
 
-  public static ArrayList<String> getUsersDocuments(long userID) {
+  public static ArrayList<String> getUsersDocumentsHashes(long userID) {
     Query query = new Query("User").addFilter("userID", Query.FilterOperator.EQUAL, userID);
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
 
@@ -170,5 +170,21 @@ public class Database {
     }
 
     return docHashes;
+  }
+
+  public static ArrayList<Document> getUsersDocuments(long userID) {
+    ArrayList<String> docHashes = getUsersDocumentsHashes(userID);
+
+    ArrayList<Document> docs = new ArrayList<Document>();
+    for(String hash : docHashes) {
+        Document doc = getDocumentByHash(hash);
+        docs.add(doc);
+    }
+
+    if(userEntity == null) {
+      return null;
+    }
+
+    return docs;
   }
 }
