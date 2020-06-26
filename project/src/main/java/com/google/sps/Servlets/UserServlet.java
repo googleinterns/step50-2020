@@ -27,8 +27,10 @@ public class UserServlet extends HttpServlet {
       User user = Database.logInUser(userEmail, nickname);
       session.setAttribute("userID", user.getUserID());
 
-      String hash = "MAYYw2CqGI_NOJIi4su";
-      response.sendRedirect("/Document?documentHash=" + hash);
+       response.sendRedirect("/user-home.html");
+      
+//       String hash = "MAYYw2CqGI_NOJIi4su";
+//       response.sendRedirect("/Document?documentHash=" + hash);
 
     } else {
       request.getSession(false).invalidate();
