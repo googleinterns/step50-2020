@@ -111,7 +111,7 @@
         if (session.getAttribute("userID") != null) {
             user = Database.getUserByID((long) session.getAttribute("userID"));
             document = Database.getDocumentByHash((String)request.getAttribute("documentHash")); %>
-            <%= document.getName(); %>
+            <%= document.getName() %>
         <% } else {
           response.sendRedirect("/");  
         } %>
