@@ -44,5 +44,11 @@ public class UserHomeServlet extends HttpServlet {
     long userID = (long) request.getSession(false).getAttribute("userID");
     // check if null, then redirect
     Database.createDocument(name, language, documentID, userID);
+    request.setAttribute("documentHash", documentID);
+    try {
+      request.getRequestDispatcher("/document.jsp#-" + hash).forward(request, response);
+    } catch (Exception e) {
+      response.sendRedirect("/");
+    }
   }
 }
