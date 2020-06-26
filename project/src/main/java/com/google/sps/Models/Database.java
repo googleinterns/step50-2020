@@ -56,7 +56,7 @@ public class Database {
     }
   }
 
-  public static User getUserByID(String email) {
+  public static User getUserByEmail(String email) {
     Query query = new Query("User").addFilter("email", Query.FilterOperator.EQUAL, email);
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
 
@@ -101,4 +101,46 @@ public class Database {
 
     return new User(email, nickname, userID);
   }
+
+  private static Document createDocument(String name, String language, String hash, long userID) {
+      Entity docEntity = new Entity("Document");
+      ArrayList<Long> userIDs = new ArrayList<Long>();
+      
+      docEntity.setProperty("name", name);
+      docEntity.setProperty("language", language);
+      docEntity.setProperty("hash", hash);
+      userIDs.add(userID);
+      docEntity.setProperty("userIDs", userIDs);
+      getDatastore().put(docEntity);
+
+      return new Document(name, language, hash, userIDs);
+  }
+
+  public static Document getDocumentByHash(String hash) {
+    Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
+    Entity docEntity = getDatastore().prepare(query).asSingleEntity();
+
+    String name = (String) docEntity.getProperty("name");
+    String language = (String) docEntity.getProperty("language");
+    ArrayList<Long> userIDs = (ArrayList)docEntity.getProperty("userIDs");
+
+    if(docEntity == null) {
+      return null;
+    }
+
+    return new Document(name, language, hash, userIDs);
+  }
+
+  public static ArrayList<Long> getDocumentUsers(String hash) {
+    Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
+    Entity docEntity = getDatastore().prepare(query).asSingleEntity();
+
+    ArrayList<Long> userIDs = (ArrayList)docEntity.getProperty("userIDs");
+
+    if(docEntity == null) {
+      return null;
+    }
+
+    return userIDs;
+  } 
 }
