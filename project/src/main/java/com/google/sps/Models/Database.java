@@ -108,14 +108,14 @@ public class Database {
   private static void addDocumentForUser(String hash, long userID) {
     Query query = new Query("User").addFilter("__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("User", userID));
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
-    ArrayList<String> docHashes = getUsersDocuments(userID);
+    ArrayList<String> docHashes = getUsersDocumentsHashes(userID);
 
     docHashes.add(hash);
     //user.setDocs(docHashes);
     userEntity.setProperty("documents", docHashes);
   }
 
-  private static Document createDocument(String name, String language, String hash, long userID) {
+  public static Document createDocument(String name, String language, String hash, long userID) {
       // I believe a static version would suit our needs better
       // as when you share it with someone their ID gets appended to the array.
       Entity docEntity = new Entity("Document");
@@ -179,10 +179,6 @@ public class Database {
     for(String hash : docHashes) {
         Document doc = getDocumentByHash(hash);
         docs.add(doc);
-    }
-
-    if(userEntity == null) {
-      return null;
     }
 
     return docs;
