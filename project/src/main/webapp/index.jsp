@@ -39,6 +39,9 @@
         height: 45px;
         background: white;
         border: 1px solid grey;
+        font-size: 24px;
+        font-family: roboto;
+        font-weight: bold;
       }
 
       /* the toolbar with operations */

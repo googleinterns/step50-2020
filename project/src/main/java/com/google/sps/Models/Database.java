@@ -111,7 +111,6 @@ public class Database {
     ArrayList<String> docHashes = getUsersDocumentsHashes(userID);
 
     docHashes.add(hash);
-    //user.setDocs(docHashes);
     userEntity.setProperty("documents", docHashes);
   }
 

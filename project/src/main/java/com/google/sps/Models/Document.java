@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Document{
+  // userIDs is a list of people who can access the current document
+  // permissions are not setup yet so "owners" and "collaborators" have not yet been setup
   String language, name, hash;
   ArrayList<Long> userIDs = new ArrayList<Long>();
   
