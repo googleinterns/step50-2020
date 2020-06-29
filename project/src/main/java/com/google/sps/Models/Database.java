@@ -154,7 +154,7 @@ public class Database {
       return null;
     }
 
-    ArrayList<Long> userIDs = (ArrayList) docEntity.getProperty("userIDs");
+    ArrayList<Long> userIDs = getListProperty(docEntity, "userIDs");
     return userIDs;
   } 
 
