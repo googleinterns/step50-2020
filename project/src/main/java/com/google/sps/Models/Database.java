@@ -40,17 +40,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class Database {
-  // public static List<int> getUserDocumentIDs(int id) {
-  //   getDatabase();
-  //   //return list of document ids
-  // }
 
+  private static DatastoreService getDatastore() {
+    return DatastoreServiceFactory.getDatastoreService();
+  }
+
+  /* User Entity */
   public static User logInUser(String email, String nickname) {
     Query query = new Query("User").addFilter("email", Query.FilterOperator.EQUAL, email);
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
 
     if(userEntity != null) {
-      ArrayList<String> docHashes = (ArrayList)userEntity.getProperty("docHashes");
+      ArrayList<String> docHashes = getListProperty(userEntity, "documents");
       return new User(email, nickname, userEntity.getKey().getId(), docHashes);
     } else {
       return createUser(email, nickname);
@@ -61,14 +62,13 @@ public class Database {
     Query query = new Query("User").addFilter("email", Query.FilterOperator.EQUAL, email);
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
 
-    String nickname = (String) userEntity.getProperty("nickname");
-    long userID = userEntity.getKey().getId();
-    ArrayList<String> docHashes = (ArrayList)userEntity.getProperty("docHashes");
-
     if (userEntity == null) {
       return null;
     }
 
+    String nickname = (String) userEntity.getProperty("nickname");
+    long userID = userEntity.getKey().getId();
+    ArrayList<String> docHashes = getListProperty(userEntity, "documents");
     return new User(email, nickname, userID, docHashes);
   }
 
@@ -77,19 +77,15 @@ public class Database {
         "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("User", userID));
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
 
-    String email = (String) userEntity.getProperty("email");
-    String nickname = (String) userEntity.getProperty("nickname");
-    ArrayList<String> docHashes = (ArrayList)userEntity.getProperty("docHashes");
-
     if (userEntity == null) {
       return null;
     }
 
-    return new User(email, nickname, userID, docHashes);
-  }
+    String email = (String) userEntity.getProperty("email");
+    String nickname = (String) userEntity.getProperty("nickname");
+    ArrayList<String> docHashes = getListProperty(userEntity, "documents");
 
-  private static DatastoreService getDatastore() {
-    return DatastoreServiceFactory.getDatastoreService();
+    return new User(email, nickname, userID, docHashes);
   }
 
   private static User createUser(String email, String nickname) {
@@ -109,15 +105,19 @@ public class Database {
     Query query = new Query("User").addFilter("__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("User", userID));
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
     ArrayList<String> docHashes = getUsersDocumentsHashes(userID);
-
     docHashes.add(hash);
-    //user.setDocs(docHashes);
     userEntity.setProperty("documents", docHashes);
+    getDatastore().put(userEntity);
   }
 
+  public static ArrayList<String> getUsersDocumentsHashes(long userID) {
+    User user = getUserByID(userID);
+    return user.getDocs();
+  }
+
+  /* Document Entity */
   public static Document createDocument(String name, String language, String hash, long userID) {
-      // I believe a static version would suit our needs better
-      // as when you share it with someone their ID gets appended to the array.
+      // Static version where when document is shared, the userID gets appended to the array.
       Entity docEntity = new Entity("Document");
       ArrayList<Long> userIDs = new ArrayList<Long>();
       
@@ -128,6 +128,7 @@ public class Database {
       docEntity.setProperty("userIDs", userIDs);
       getDatastore().put(docEntity);
 
+      addDocumentForUser(hash, userID);
       return new Document(name, language, hash, userIDs);
   }
 
@@ -135,14 +136,13 @@ public class Database {
     Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
     Entity docEntity = getDatastore().prepare(query).asSingleEntity();
 
-    String name = (String) docEntity.getProperty("name");
-    String language = (String) docEntity.getProperty("language");
-    ArrayList<Long> userIDs = (ArrayList)docEntity.getProperty("userIDs");
-
     if(docEntity == null) {
       return null;
     }
 
+    String name = (String) docEntity.getProperty("name");
+    String language = (String) docEntity.getProperty("language");
+    ArrayList<Long> userIDs = (ArrayList)docEntity.getProperty("userIDs");
     return new Document(name, language, hash, userIDs);
   }
 
@@ -150,37 +150,32 @@ public class Database {
     Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
     Entity docEntity = getDatastore().prepare(query).asSingleEntity();
 
-    ArrayList<Long> userIDs = (ArrayList)docEntity.getProperty("userIDs");
-
     if(docEntity == null) {
       return null;
     }
 
+    ArrayList<Long> userIDs = (ArrayList) docEntity.getProperty("userIDs");
     return userIDs;
   } 
 
-  public static ArrayList<String> getUsersDocumentsHashes(long userID) {
-    Query query = new Query("User").addFilter("userID", Query.FilterOperator.EQUAL, userID);
-    Entity userEntity = getDatastore().prepare(query).asSingleEntity();
-
-    ArrayList<String> docHashes = (ArrayList)userEntity.getProperty("docHashes");
-
-    if(userEntity == null) {
-      return null;
-    }
-
-    return docHashes;
-  }
-
   public static ArrayList<Document> getUsersDocuments(long userID) {
     ArrayList<String> docHashes = getUsersDocumentsHashes(userID);
-
     ArrayList<Document> docs = new ArrayList<Document>();
     for(String hash : docHashes) {
         Document doc = getDocumentByHash(hash);
         docs.add(doc);
     }
-
     return docs;
+  }
+
+  // Datastore does not support empty collections (it will be stored as null)
+  // https://cloud.google.com/appengine/docs/standard/java/datastore/entities#Using_an_empty_list
+  private static ArrayList getListProperty(Entity entity, String prop) {
+    ArrayList items = (ArrayList) entity.getProperty(prop);
+    if (items == null) {
+      return new ArrayList();
+    } else {
+      return items;
+    }
   }
 }
