@@ -3,6 +3,7 @@ package com.google.sps.servlets;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.*;
+import com.google.sps.models.Database;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -11,11 +12,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.google.sps.models.Database;
 
-/* 
-  Called by the user-home.html page. 
-  Creates document in the left nav-panel and 
+/*
+  Called by the user-home.html page.
+  Creates document in the left nav-panel and
   renders them in the right docs-list
 */
 

@@ -73,7 +73,8 @@ body {
 }
 
 .white-btn,
-.dropdown-border,
+.dropdown-bordered,
+.nav-panel .new-doc-group .dropdown .dropdown-trigger button,
 .dropdown-borderless {
   border: 1px #cecece solid;
   border-radius: 4px;
@@ -94,7 +95,8 @@ body {
   background-color: #f7f7f7;
 }
 
-.dropdown-border,
+.dropdown-bordered,
+.nav-panel .new-doc-group .dropdown .dropdown-trigger button,
 .dropdown-borderless {
   font-weight: 400;
 }

@@ -12,7 +12,7 @@ export class NavPanel extends LitElement {
   constructor() {
     super();
     this.languages = ['Python', 'Javacript'];
-    this.documentID = "";
+    this.documentID = '';
   }
 
   // Remove shadow DOM so styles are inherited
@@ -22,9 +22,9 @@ export class NavPanel extends LitElement {
 
   init() {
     let config = {
-        apiKey: 'AIzaSyDUYns7b2bTK3Go4dvT0slDcUchEtYlSWc',
-        authDomain: "step-collaborative-code-editor.firebaseapp.com",
-        databaseURL: "https://step-collaborative-code-editor.firebaseio.com"
+      apiKey: 'AIzaSyDUYns7b2bTK3Go4dvT0slDcUchEtYlSWc',
+      authDomain: 'step-collaborative-code-editor.firebaseapp.com',
+      databaseURL: 'https://step-collaborative-code-editor.firebaseio.com'
     };
     firebase.initializeApp(config);
     this.documentID = this.createDocumentID();
@@ -32,14 +32,15 @@ export class NavPanel extends LitElement {
 
   createDocumentID() {
     var ref = firebase.database().ref();
-    ref = ref.push(); // generate unique location.
+    ref = ref.push();  // generate unique location.
     return ref.key;
   }
 
   render() {
     return html`
       <div>
-        <form class="new-doc-group" action="/UserHome" method="POST" onsubmit=${this.init()}>
+        <form class="new-doc-group" action="/UserHome" method="POST" onsubmit=${
+        this.init()}>
           <input name="title" class="white-input full-width" placeholder="Write a document title..." />
           <dropdown-element 
             .options="${this.languages}" 

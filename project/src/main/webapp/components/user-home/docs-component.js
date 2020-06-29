@@ -18,10 +18,10 @@ export class DocsComponent extends LitElement {
   }
 
   getServletData() {
-    /*fetch('/UserHome').then((response) => response.json()).then((documentList) => {
-      this.documents = documentList;
+    /*fetch('/UserHome').then((response) => response.json()).then((documentList)
+    => { this.documents = documentList;
     });*/
-    console.log("Rewrite when UserHomeServlet can return data.");
+    console.log('Rewrite when UserHomeServlet can return data.');
   }
 
   render() {
@@ -29,9 +29,12 @@ export class DocsComponent extends LitElement {
       <div>
           <div class="title">My Code Docs</div>
           <ul class="docs-list">
-            ${this.documents.map((doc) => html`
+            ${
+        this.documents.map(
+            (doc) => html`
                 <li class="docs-list-element">
-                  ${doc.name} <div class="revision-text">Latest Revision: ${doc.language}</div>
+                  ${doc.name} <div class="revision-text">Latest Revision: ${
+                doc.language}</div>
                 </li>
             `)}
           <ul>

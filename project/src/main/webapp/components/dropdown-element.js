@@ -6,7 +6,7 @@ import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-eleme
  * label - initial label at the top of the dropdown
  * changeLabel - whether to change the top label based on selection
  * styling - css classes to apply to all elements in the dropdown.
- * otherwise let the dropdown inherit styling via css. 
+ * otherwise let the dropdown inherit styling via css.
  */
 export class DropdownElement extends LitElement {
   static get properties() {
@@ -48,7 +48,9 @@ export class DropdownElement extends LitElement {
 
   render() {
     let dropdownState = this.showDropdown ? 'is-active' : '';
-    let dropdownLabel = (this.changeLabel && this.selectedItem != '') ? this.selectedItem : this.label;
+    let dropdownLabel = (this.changeLabel && this.selectedItem != '') ?
+        this.selectedItem :
+        this.label;
     return html`        
       <div>
         <!-- Add hidden input to transmit GET request data -->
@@ -56,17 +58,18 @@ export class DropdownElement extends LitElement {
         <div class=${'dropdown ' + dropdownState + ' ' + this.styling}>
           <div class=${'dropdown-trigger ' + this.styling}>
             <button type="button" class=${this.styling} @click=${
-          this.toggleDropdown} aria-haspopup="true" aria-controls="dropdown-menu">
+        this.toggleDropdown} aria-haspopup="true" aria-controls="dropdown-menu">
               <span>${dropdownLabel}</span>
               <span class="icon is-small">
                 <i class="fa fa-angle-down" aria-hidden="true"></i>
               </span>
             </button>
           </div>
-          <div class="${'dropdown-menu ' + this.styling}" id="dropdown-menu" role="menu">
+          <div class="${
+                           'dropdown-menu ' +
+        this.styling}" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-              ${this.options.map((option) => 
-                html`
+              ${this.options.map((option) => html`
                   <a href="#" 
                     @click=${() => this.toggleSelectedItem(option)} 
                     class="dropdown-item"> 
