@@ -27,9 +27,11 @@ public class UserServlet extends HttpServlet {
       User user = Database.logInUser(userEmail, nickname);
       session.setAttribute("userID", user.getUserID());
 
+      response.sendRedirect("/user-home.html");
+
     } else {
       request.getSession(false).invalidate();
+      response.sendRedirect("/");
     }
-    response.sendRedirect("/user-home.html");
   }
 }
