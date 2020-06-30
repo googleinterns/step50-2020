@@ -18,9 +18,13 @@ export class DocsComponent extends LitElement {
   }
 
   getServletData() {
-    fetch('/UserHome').then((response) => response.json()).then((documentList)
-    => { this.documents = documentList;
+    fetch('/UserHome').then((response) => response.json()).then((documentList) => { 
+      this.documents = documentList;
     });
+  }
+
+  loadDocument(hash) {
+    window.location.href = "/Document?documentHash=" + hash;
   }
 
   render() {
@@ -28,12 +32,14 @@ export class DocsComponent extends LitElement {
       <div>
           <div class="title">My Code Docs</div>
           <ul class="docs-list">
-            ${
-        this.documents.map(
-            (doc) => html`
+            ${this.documents.map((doc) => html`
                 <li class="docs-list-element">
-                  ${doc.name} <div class="revision-text">Latest Revision: ${
-                doc.language}</div>
+                  <a @click=${() => this.loadDocument(doc.hash)}>
+                    ${doc.name}
+                  </a>
+                  <div class="revision-text">Latest Revision: 
+                    ${doc.language}
+                  </div>
                 </li>
             `)}
           <ul>
