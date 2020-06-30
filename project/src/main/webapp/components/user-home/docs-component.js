@@ -3,21 +3,25 @@ import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-eleme
 export class DocsComponent extends LitElement {
   static get properties() {
     return {
-      documents: {type: Array},
+      documents: {type: Object},
     };
   }
 
   constructor() {
     super();
-    this.documents = [
-      {'title': 'A doc', 'timestamp': 'June 16, 5:28PM'},
-      {'title': 'Another doc', 'timestamp': 'June 15, 1:30PM'}
-    ]
+    this.documents = [];
   }
 
   // Remove shadow DOM so styles are inherited
   createRenderRoot() {
     return this;
+  }
+
+  getServletData() {
+    /*fetch('/UserHome').then((response) => response.json()).then((documentList)
+    => { this.documents = documentList;
+    });*/
+    console.log('Rewrite when UserHomeServlet can return data.');
   }
 
   render() {
@@ -29,11 +33,12 @@ export class DocsComponent extends LitElement {
         this.documents.map(
             (doc) => html`
                 <li class="docs-list-element">
-                  ${doc.title} <div class="revision-text">Latest Revision: ${
-                doc.timestamp}</div>
+                  ${doc.name} <div class="revision-text">Latest Revision: ${
+                doc.language}</div>
                 </li>
-              `)}
+            `)}
           <ul>
+          ${this.getServletData()}
       </div>
     `;
   }
