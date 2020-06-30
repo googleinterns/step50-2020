@@ -30,6 +30,8 @@ public class UserHomeServlet extends HttpServlet {
     response.getWriter().println(documents);
   }
 
+  // Accepts a list of Java Objects, where each {key: value}
+  // will be the object's attribute and its assigned value.
   private String convertToJson(List lst) {
     Gson gson = new Gson();
     String json = gson.toJson(lst);

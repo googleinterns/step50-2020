@@ -18,10 +18,9 @@ export class DocsComponent extends LitElement {
   }
 
   getServletData() {
-    /*fetch('/UserHome').then((response) => response.json()).then((documentList)
+    fetch('/UserHome').then((response) => response.json()).then((documentList)
     => { this.documents = documentList;
-    });*/
-    console.log('Rewrite when UserHomeServlet can return data.');
+    });
   }
 
   render() {
