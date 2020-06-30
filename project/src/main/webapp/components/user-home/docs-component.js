@@ -34,11 +34,17 @@ export class DocsComponent extends LitElement {
           <ul class="docs-list">
             ${this.documents.map((doc) => html`
                 <li class="docs-list-element">
-                  <a @click=${() => this.loadDocument(doc.hash)}>
-                    ${doc.name}
-                  </a>
-                  <div class="revision-text">Latest Revision: 
-                    ${doc.language}
+                  <div>
+                    <a @click=${() => this.loadDocument(doc.hash)}>
+                      ${doc.name}
+                    </a>
+                    <span class="tag tag-bordered">
+                      ${doc.language}
+                    </span>
+                  </div>
+                  <div class="shared-with-text">
+                    <b> Shared With </b> 
+                    ${doc.userIDs.toString()}
                   </div>
                 </li>
             `)}
