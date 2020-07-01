@@ -13,18 +13,23 @@
   .nav-btn-group
     margin-top: 100px
 
+.user-info
+  float: right
+  margin: 30px 30px 0 0
+
 .docs-component
   padding: 150px 150px 150px 100px
-  .docs-list    
-    .docs-list-element 
+  .docs-list
+    li:last-of-type
+      border-bottom: 1px solid $medium-gray     
+    li 
       border-top: 1px solid $medium-gray
-      border-bottom: 1px solid $medium-gray
       font-size: $normal 
       height: 3 * $normal
       display: flex
       justify-content: space-between
       align-items: center
-      .revision-text
+      .shared-with-text
         color: $medium-gray
         text-align: right
         font-style: italic
