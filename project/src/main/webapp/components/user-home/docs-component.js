@@ -34,6 +34,7 @@ export class DocsComponent extends LitElement {
   }
 
   render() {
+    const empty = this.documents.length == 0;
     return html`        
       <div>
         <div class="user-info">
@@ -43,24 +44,32 @@ export class DocsComponent extends LitElement {
         </div>
         <div class="docs-component">
           <div class="title">My Code Docs</div>
-          <ul class="docs-list">
-            ${this.documents.map((doc) => html`
-                <li>
-                  <div>
-                    <a @click=${() => this.loadDocument(doc.hash)}>
-                      ${doc.name}
-                    </a>
-                    <span class="tag tag-bordered">
-                      ${doc.language}
-                    </span>
-                  </div>
-                  <div class="shared-with-text">
-                    <b> Shared with </b> 
-                    ${doc.userIDs.toString()}
-                  </div>
-                </li>
-            `)}
-          <ul>
+          ${empty ? 
+            html`
+              <img class="float-right" src="../assets/empty-docs.png" />
+            `
+            :
+            html`
+              <ul class="docs-list">
+                ${this.documents.map((doc) => html`
+                    <li>
+                      <div>
+                        <a @click=${() => this.loadDocument(doc.hash)}>
+                          ${doc.name}
+                        </a>
+                        <span class="tag tag-bordered">
+                          ${doc.language}
+                        </span>
+                      </div>
+                      <div class="shared-with-text">
+                        <b> Shared with </b> 
+                        ${doc.userIDs.toString()}
+                      </div>
+                    </li>
+                `)}
+              <ul>
+            `
+          }
           ${this.getServletData()}
         </div>
       </div>
