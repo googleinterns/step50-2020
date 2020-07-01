@@ -19,8 +19,12 @@ public class DocumentServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     String hash = request.getParameter("documentHash");
-    request.setAttribute("documentHash", hash);
 
+    if (Database.getDocumentByHash(hash) == null) {
+      response.sendRedirect("/user-home.jsp");
+    }
+    
+    request.setAttribute("documentHash", hash);
     request.getRequestDispatcher("/document.jsp#" + hash).forward(request, response);
   }
 }

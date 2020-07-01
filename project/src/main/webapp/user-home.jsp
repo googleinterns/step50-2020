@@ -31,8 +31,8 @@
     </div>
 
     <script>
-      function loadDocument() {
-        window.location.href = "/Document?documentHash=" /* documentHash */;
+      function loadDocument(documentHash) {
+        window.location.href = "/Document?documentHash=" + documentHash;
       }
     </script>
   </body>
