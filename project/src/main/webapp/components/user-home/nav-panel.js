@@ -65,7 +65,8 @@ export class NavPanel extends LitElement {
             @change=${(e) => this.validateTitle(e)} 
             name="title" id="new-doc-title" 
             class="white-input full-width" 
-            placeholder=${this.placeholder} 
+            placeholder=${this.placeholder}
+            autocomplete="off" 
           />
           <dropdown-element 
             @change=${(e) => this.validateDropdown(e)}
