@@ -11,7 +11,7 @@ export class NavPanel extends LitElement {
 
   constructor() {
     super();
-    this.languages = ['Python', 'Javacript'];
+    this.languages = ['C++', 'Go', 'Python', 'Java', 'Javascript'];
     this.documentID = '';
   }
 
