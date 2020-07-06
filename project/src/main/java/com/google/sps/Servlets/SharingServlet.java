@@ -14,12 +14,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.ServletException;
 
 @WebServlet("/Share")
 @MultipartConfig
 public class SharingServlet extends HttpServlet {
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     String email = request.getParameter("email");
     String hash = request.getParameter("documentHash");
     String permissions = request.getParameter("permissions");
@@ -28,7 +29,8 @@ public class SharingServlet extends HttpServlet {
     if(Database.shareDocument(hash, email, permissions)) {
       out.println("Document shared with " + email);
     } else {
-      out.println("user specified does not exist");
+      out.println("User specified does not exist, invitation email has been sent");
+      request.getRequestDispatcher("/Email").forward(request, response);
     }
   }
 }

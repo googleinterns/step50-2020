@@ -28,17 +28,19 @@ import java.io.UnsupportedEncodingException;
 @WebServlet("/Email")
 public class EmailServlet extends HttpServlet {
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     long userID = (long) request.getSession(false).getAttribute("userID");
     User user = Database.getUserByID(userID);
     
     String toEmail = request.getParameter("email");
     String fromEmail = user.getEmail();
     String subject = "Invitation to edit document on Collaborative Code Editor";
-    String message = "Hi! I have invited you to join my document on Collaborative Code Editor, go to xyz.com to sign up and view!";
+    String message = "Hi! I have invited you to join my document on Collaborative Code Editor, go to https://step-collaborative-code-editor.uc.r.appspot.com/ to sign up and view!";
 
     sendEmail(toEmail, fromEmail, subject, message);
 
+    PrintWriter out = response.getWriter();    
+    out.println("User specified does not exist, invitation email has been sent");
   }
 
   private void sendEmail(String to, String from, String subject, String message){
@@ -47,17 +49,17 @@ public class EmailServlet extends HttpServlet {
 
     try {
       Message msg = new MimeMessage(session);
-      msg.setFrom(new InternetAddress(from, "Example.com Admin"));
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to, "Mr. User"));
+      msg.setFrom(new InternetAddress(from, from));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to, to));
       msg.setSubject(subject);
       msg.setText(message);
       Transport.send(msg);
     } catch (AddressException e) {
-      // ...
+      e.printStackTrace();
     } catch (MessagingException e) {
-      // ...
+      e.printStackTrace();
     } catch (UnsupportedEncodingException e) {
-      // ...
+      e.printStackTrace();
     }
   }
 }
