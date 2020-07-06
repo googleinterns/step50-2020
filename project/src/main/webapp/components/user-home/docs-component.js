@@ -6,6 +6,7 @@ export class DocsComponent extends LitElement {
       documents: {type: Object},
       nickname: {type: String},
       email: {type: String},
+      finishedGetRequest: {type: Boolean},
     };
   }
 
@@ -14,6 +15,7 @@ export class DocsComponent extends LitElement {
     this.documents = [];
     this.nickname = '';
     this.email = '';
+    this.finishedGetRequest = false; 
   }
 
   // Remove shadow DOM so styles are inherited
@@ -27,6 +29,7 @@ export class DocsComponent extends LitElement {
       this.nickname = documentsData.nickname;
       this.email = documentsData.email;
     });
+    this.finishedGetRequest = true;
   }
 
   loadDocument(hash) {
@@ -44,7 +47,7 @@ export class DocsComponent extends LitElement {
         </div>
         <div class="docs-component">
           <div class="title">My Code Docs</div>
-          ${empty ? 
+          ${empty && this.finishedGetRequest ? 
             html`
               <img class="float-right" src="../assets/empty-docs.png" />
             `
