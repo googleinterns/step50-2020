@@ -28,7 +28,7 @@ public class User {
     return email;
   }
 
-  public ArrayList<String> getDocs() {
+  public ArrayList<String> getDocHashes() {
       return docHashes;
   }
 }

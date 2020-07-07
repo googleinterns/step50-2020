@@ -39,14 +39,14 @@ public final class UserTest {
     long ID = user.getUserID();
     Assert.assertEquals(100000L, ID);
 
-    ArrayList<String> userDocs = user.getDocs();
+    ArrayList<String> userDocs = user.getDocHashes();
     Assert.assertEquals(docs, userDocs);
 
     // Testing with a populated array
     ArrayList<String> docs2 = new ArrayList<String>();
     User user2 = new User("tinodore@google.com", "Tino", 100000L, docs2);
 
-    ArrayList<String> userDocs2 = user.getDocs();
+    ArrayList<String> userDocs2 = user.getDocHashes();
     Assert.assertEquals(docs2, userDocs2);
   }
 } 

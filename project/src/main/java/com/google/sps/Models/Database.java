@@ -51,7 +51,7 @@ public class Database {
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
 
     if(userEntity != null) {
-      ArrayList<String> docHashes = getListProperty(userEntity, "documents");
+      ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
       return new User(email, nickname, userEntity.getKey().getId(), docHashes);
     } else {
       return createUser(email, nickname);
@@ -68,7 +68,7 @@ public class Database {
 
     String nickname = (String) userEntity.getProperty("nickname");
     long userID = userEntity.getKey().getId();
-    ArrayList<String> docHashes = getListProperty(userEntity, "documents");
+    ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
     return new User(email, nickname, userID, docHashes);
   }
 
@@ -83,22 +83,22 @@ public class Database {
 
     String email = (String) userEntity.getProperty("email");
     String nickname = (String) userEntity.getProperty("nickname");
-    ArrayList<String> docHashes = getListProperty(userEntity, "documents");
+    ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
 
     return new User(email, nickname, userID, docHashes);
   }
 
   private static User createUser(String email, String nickname) {
     Entity userEntity = new Entity("User");
-    ArrayList<String> documents = new ArrayList<String>();
+    ArrayList<String> docHashes = new ArrayList<String>();
 
     userEntity.setProperty("email", email);
     userEntity.setProperty("nickname", nickname);
-    userEntity.setProperty("documents", documents);
+    userEntity.setProperty("docHashes", docHashes);
     getDatastore().put(userEntity);
     long userID = userEntity.getKey().getId();
 
-    return new User(email, nickname, userID, documents);
+    return new User(email, nickname, userID, docHashes);
   }
 
   private static void addDocumentForUser(String hash, long userID) {
@@ -108,13 +108,13 @@ public class Database {
     ArrayList<String> docHashes = getUsersDocumentsHashes(userID);
     docHashes.add(hash);
 
-    userEntity.setProperty("documents", docHashes);
+    userEntity.setProperty("docHashes", docHashes);
     getDatastore().put(userEntity);
   }
 
   public static ArrayList<String> getUsersDocumentsHashes(long userID) {
     User user = getUserByID(userID);
-    return user.getDocs();
+    return user.getDocHashes();
   }
 
   /* Document Entity */
