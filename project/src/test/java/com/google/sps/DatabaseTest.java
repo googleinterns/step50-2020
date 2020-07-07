@@ -88,8 +88,7 @@ public final class DatabaseTest {
   }
 
   @Test
-  public void testGetUsersDocumentsHashes() {
-    DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+  public void testGetUsersDoc[iuooerervice ds = DatastoreServiceFactory.getDatastoreService();
     User userA = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
     ArrayList<String> docHashes = Database.getUsersDocumentsHashes(userA.getUserID());
     Assert.assertEquals(0, docHashes.size());
@@ -99,6 +98,8 @@ public final class DatabaseTest {
   public void testCreateDocument() {
     DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
     User userA = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
+    ArrayList<Long> editorIDs = new ArrayList<Long>();
+    ArrayList<Long> viewerIDs = new ArrayList<Long>();
 
     // Check Document Entity for new doc
     String name = DOC_NAME_A;
