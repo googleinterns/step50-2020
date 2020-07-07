@@ -136,7 +136,6 @@ public final class DatabaseTest {
     Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, userA.getUserID());
   }
 
-
   @Test
   public void testGetUsersDocuments() {
     DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
