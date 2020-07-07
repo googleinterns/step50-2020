@@ -52,7 +52,8 @@ public class Database {
 
     if(userEntity != null) {
       ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
-      return new User(email, nickname, userEntity.getKey().getId(), docHashes);
+      ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
+      return new User(email, nickname, userEntity.getKey().getId(), docHashes, folderIDs);
     } else {
       return createUser(email, nickname);
     }
@@ -69,7 +70,9 @@ public class Database {
     String nickname = (String) userEntity.getProperty("nickname");
     long userID = userEntity.getKey().getId();
     ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
-    return new User(email, nickname, userID, docHashes);
+    ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
+
+    return new User(email, nickname, userID, docHashes, folderIDs);
   }
 
   public static User getUserByID(long userID) {
@@ -84,21 +87,30 @@ public class Database {
     String email = (String) userEntity.getProperty("email");
     String nickname = (String) userEntity.getProperty("nickname");
     ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
+    ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
 
-    return new User(email, nickname, userID, docHashes);
+    return new User(email, nickname, userID, docHashes, folderIDs);
   }
 
   private static User createUser(String email, String nickname) {
     Entity userEntity = new Entity("User");
     ArrayList<String> docHashes = new ArrayList<String>();
+<<<<<<< HEAD
+=======
+    ArrayList<Long> folderIDs = new ArrayList<Long>();
+>>>>>>> Create Folder class and associated functions in Database
 
     userEntity.setProperty("email", email);
     userEntity.setProperty("nickname", nickname);
     userEntity.setProperty("docHashes", docHashes);
+<<<<<<< HEAD
+=======
+    userEntity.setProperty("folderIDs", folderIDs);
+>>>>>>> Create Folder class and associated functions in Database
     getDatastore().put(userEntity);
     long userID = userEntity.getKey().getId();
 
-    return new User(email, nickname, userID, docHashes);
+    return new User(email, nickname, userID, docHashes, folderIDs);
   }
 
   private static void addDocumentForUser(String hash, long userID) {
@@ -250,6 +262,37 @@ public class Database {
     }
   }
     
+  /* Folder Entity */
+  public static Folder createFolder(String name, long userID) {
+    Entity folderEntity = new Entity("Folder");
+    ArrayList<String> docHashes = new ArrayList<String>();
+    ArrayList<Long> userIDs = new ArrayList<Long>();
+    userIDs.add(userID);
+    folderEntity.setProperty("name", name);
+    folderEntity.setProperty("docHashes", docHashes);
+    folderEntity.setProperty("userIDs", userIDs);
+    getDatastore().put(folderEntity);
+    long folderID = folderEntity.getKey().getId();
+    addFolderForUser(userID, folderID);
+    return new Folder(name, folderID, docHashes, userIDs); 
+  }
+
+  public static void addFolderForUser(long userID, long folderID) {
+    Query query = new Query("User").addFilter(
+        "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("User", userID));
+    Entity userEntity = getDatastore().prepare(query).asSingleEntity();
+    ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
+    folderIDs.add(folderID);
+    userEntity.setProperty("folderIDs", folderIDs);
+    getDatastore().put(userEntity);
+  }
+
+  public static void addDocumentToFolder() {
+    // remove the doc hash for the user 
+    // add to folder docs
+    // union the users
+  }
+
   // Datastore does not support empty collections (it will be stored as null)
   // https://cloud.google.com/appengine/docs/standard/java/datastore/entities#Using_an_empty_list
   private static ArrayList getListProperty(Entity entity, String prop) {

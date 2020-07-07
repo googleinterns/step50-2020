@@ -17,13 +17,13 @@ package com.google.sps.models;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Document{
+public class Document {
   String language, name, hash;
   // Using 3 array lists because making inherited 
   // user classes seems redundant as the classes themselves 
   // will have no extra functionality, all functions that are special
   // to the permissions will be done in Document and Database not User
-  long ownerID;
+  long ownerID, folderID;
   ArrayList<Long> editorIDs = new ArrayList<Long>();
   ArrayList<Long> viewerIDs = new ArrayList<Long>();
   
