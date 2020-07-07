@@ -6,6 +6,7 @@ export class DocsComponent extends LitElement {
       documents: {type: Object},
       nickname: {type: String},
       email: {type: String},
+      finishedGetRequest: {type: Boolean},
     };
   }
 
@@ -14,6 +15,7 @@ export class DocsComponent extends LitElement {
     this.documents = [];
     this.nickname = '';
     this.email = '';
+    this.finishedGetRequest = false; 
   }
 
   // Remove shadow DOM so styles are inherited
@@ -27,13 +29,17 @@ export class DocsComponent extends LitElement {
       this.nickname = documentsData.nickname;
       this.email = documentsData.email;
     });
+    this.finishedGetRequest = true;
   }
 
+  // Open document in new tab, else if operation is blocked load the doc in the same tab
   loadDocument(hash) {
-    window.location.href = "/Document?documentHash=" + hash;
+    const docLink = "/Document?documentHash=" + hash;
+    window.open(docLink) || window.location.replace(docLink);
   }
 
   render() {
+    const empty = this.documents.length == 0;
     return html`        
       <div>
         <div class="user-info">
@@ -43,20 +49,28 @@ export class DocsComponent extends LitElement {
         </div>
         <div class="docs-component">
           <div class="title">My Code Docs</div>
-          <ul class="docs-list">
-            ${this.documents.map((doc) => html`
-                <li>
-                  <div>
-                    <a @click=${() => this.loadDocument(doc.hash)}>
-                      ${doc.name}
-                    </a>
-                    <span class="tag tag-bordered">
-                      ${doc.language}
-                    </span>
-                  </div>
-                </li>
-            `)}
-          <ul>
+          ${empty && this.finishedGetRequest ? 
+            html`
+              <img class="float-right" src="../assets/empty-docs.png" />
+            `
+            :
+            html`
+              <ul class="docs-list">
+                ${this.documents.map((doc) => html`
+                    <li>
+                      <div>
+                        <a @click=${() => this.loadDocument(doc.hash)}>
+                          ${doc.name}
+                        </a>
+                        <span class="tag tag-bordered">
+                          ${doc.language}
+                        </span>
+                      </div>
+                    </li>
+                `)}
+              <ul>
+            `
+          }
           ${this.getServletData()}
         </div>
       </div>
