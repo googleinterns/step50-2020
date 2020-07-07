@@ -5,13 +5,10 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.*;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
 import com.google.sps.models.Database;
 import com.google.sps.models.User;
 import java.util.Properties;
@@ -54,11 +51,7 @@ public class EmailServlet extends HttpServlet {
       msg.setSubject(subject);
       msg.setText(message);
       Transport.send(msg);
-    } catch (AddressException e) {
-      e.printStackTrace();
-    } catch (MessagingException e) {
-      e.printStackTrace();
-    } catch (UnsupportedEncodingException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
