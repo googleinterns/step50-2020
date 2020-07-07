@@ -204,10 +204,6 @@ public class Database {
     return docs;
   }
 
-  public static void addDocumentEditor(String hash, long userID) {
-      Document doc = getDocumentByHash(hash);
-  }
-
   // Takes in a Document hash and a User email
   // Adds the userID to the Document's list of Users
   // Adds the Document's hash to the User's list of Documents
