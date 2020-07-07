@@ -35,6 +35,12 @@ export class PanelElement extends LitElement {
 
   toggleValue(item) {
     this.value = item;
+    this.createChangeEvent();
+  }
+
+  createChangeEvent() {
+    let event = new Event('change');
+    this.dispatchEvent(event);
   }
 
   render() {
@@ -43,8 +49,8 @@ export class PanelElement extends LitElement {
       <div>
         <div class=${'dropdown ' + panelState + ' ' + this.styling}>
           <div class=${'dropdown-trigger ' + this.styling}>
-            <button type="button" class=${this.styling} @click=${
-        this.togglepanel} aria-haspopup="true" aria-controls="panel-menu">
+            <button type="button" class=${this.styling} 
+              @click=${this.togglePanel} aria-haspopup="true" aria-controls="panel-menu">
               ${this.showPanel ?
                 html` 
                 <span class="icon is-small">
@@ -61,20 +67,18 @@ export class PanelElement extends LitElement {
             </button>
           </div>
           <div class="${'dropdown-menu ' + this.styling}" id="dropdown-menu" role="menu">
-            <div class="dropdown-content">
               ${this.options.map((option) => 
                 html`
                   <a href="#" 
                     @click=${() => this.toggleValue(option)} 
-                    class="panel-item"> 
+                    class="dropdown-item"> 
                     ${option} 
                   </a>
                 `)}
-            </div>
           </div>
         </div>
       </div>
     `;
   }
 }
-customElements.define('panel-element', panelElement);
+customElements.define('panel-element', PanelElement);
