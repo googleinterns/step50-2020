@@ -1,84 +1,14 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
+import {DropdownElement} from './dropdown-element.js';
 
-/* Modifiable attributes
- * .options - options in the panel
- * label - initial label at the top of the panel
- */
-export class PanelElement extends LitElement {
-  static get properties() {
-    return {
-      options: {type: Array},
-      label: {type: String},
-      value: {type: String},
-      showPanel: {type: Boolean},
-      styling: {type: String},
-    };
-  }
+export class PanelElement extends DropdownElement {
 
   constructor() {
     super();
-    this.options = [];
-    this.label = '';
-    this.value = '';
-    this.showPanel = false;
-    this.styling = '';
+    this.changeLabel = false;
+    this.hideIcon = 'fa fa-angle-right';
+    this.hideOnSelect = false; 
   }
 
-  // Remove shadow DOM so styles are inherited
-  createRenderRoot() {
-    return this;
-  }
-
-  togglePanel() {
-    this.showPanel = !this.showPanel;
-  }
-
-  toggleValue(item) {
-    this.value = item;
-    this.createChangeEvent();
-  }
-
-  createChangeEvent() {
-    let event = new Event('change');
-    this.dispatchEvent(event);
-  }
-
-  render() {
-    let panelState = this.showPanel ? 'is-active' : '';
-    return html`        
-      <div>
-        <div class=${'dropdown ' + panelState + ' ' + this.styling}>
-          <div class=${'dropdown-trigger ' + this.styling}>
-            <button type="button" class=${this.styling} 
-              @click=${this.togglePanel} aria-haspopup="true" aria-controls="panel-menu">
-              ${this.showPanel ?
-                html` 
-                <span class="icon is-small">
-                  <i class="fa fa-angle-down" aria-hidden="true"></i>
-                </span>
-                ` : 
-                html` 
-                <span class="icon is-small">
-                  <i class="fa fa-angle-right" aria-hidden="true"></i>
-                </span>
-                `
-              }
-              <span>${this.label}</span>
-            </button>
-          </div>
-          <div class="${'dropdown-menu ' + this.styling}" id="dropdown-menu" role="menu">
-              ${this.options.map((option) => 
-                html`
-                  <a href="#" 
-                    @click=${() => this.toggleValue(option)} 
-                    class="dropdown-item"> 
-                    ${option} 
-                  </a>
-                `)}
-          </div>
-        </div>
-      </div>
-    `;
-  }
 }
 customElements.define('panel-element', PanelElement);

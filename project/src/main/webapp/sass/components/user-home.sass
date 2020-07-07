@@ -6,14 +6,6 @@
     flex-direction: column
     justify-content: space-between 
     height: 8 * $normal
-    input:focus::-webkit-input-placeholder
-      color: transparent
-    input:focus:-moz-placeholder
-      color:transparent
-    input:focus::-moz-placeholder
-      color:transparent
-    input:focus:-ms-input-placeholder
-      color:transparent
     .dropdown
       .dropdown-trigger
         button
@@ -30,9 +22,13 @@
       .dropdown-trigger
         button
           @extend .plain-btn
+      .dropdown-menu
+        .dropdown-content
+          box-shadow: none
 
 .user-info
   float: right
+  text-align: right
   margin: 30px 30px 0 0
 
 .docs-component
