@@ -25,20 +25,9 @@
           response.sendRedirect("/");  
         } %>
   </head>
-  <style>
-    .sign-out {
-      margin-top: 10px;
-      position: absolute;
-      top: 500px;
-      left: 140px;
-    }
-  </style>
 
   <body>
     <user-home></user-home>
-    <div class="sign-out">
-      <a href="/_ah/logout?continue=%2FUser"><button class="primary-blue-btn"> Sign out </button></a>
-    </div>
     <div id="ajaxResponse"></div>
     <script>
       function loadDocument(documentHash) {

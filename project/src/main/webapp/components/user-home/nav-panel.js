@@ -9,7 +9,8 @@ export class NavPanel extends LitElement {
       documentID: {type: String},
       formDisabled: {type: String},
       validTitle: {type: Boolean},
-      validDropdown: {type: Boolean}
+      validDropdown: {type: Boolean},
+      value: {type: String},
     };
   }
 
@@ -57,7 +58,13 @@ export class NavPanel extends LitElement {
   }
 
   getPanelValue(e) {
-    console.log(e.target.value);
+    this.value = e.target.value;
+    this.createChangeEvent();
+  }
+
+  createChangeEvent() {
+    let event = new Event('change');
+    this.dispatchEvent(event);
   }
 
   render() {
@@ -99,7 +106,6 @@ export class NavPanel extends LitElement {
             label="Folders"
             styling="full-width">
           </panel-element>
-          ${this.getPanelValue()}
         </div>
       </div>
     `;

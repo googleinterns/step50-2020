@@ -46,10 +46,12 @@ export class DocsComponent extends LitElement {
           <b>${this.nickname}</b>
           <br>
           ${this.email}
+          <br>
+          <a href="/_ah/logout?continue=%2FUser"> Sign out </a>
         </div>
         <div class="docs-component">
           <div class="title">My Code Docs</div>
-          ${empty && this.finishedGetRequest ? 
+          ${ empty && this.finishedGetRequest ? 
             html`
               <img class="float-right" src="../assets/empty-docs.png" />
             `
