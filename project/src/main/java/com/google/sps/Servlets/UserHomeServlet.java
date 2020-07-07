@@ -50,8 +50,6 @@ public class UserHomeServlet extends HttpServlet {
     String language = request.getParameter("language");
     String documentID = request.getParameter("documentID");
     long userID = (long) request.getSession(false).getAttribute("userID");
-    ArrayList<Long> editorIDs = new ArrayList<Long>();
-    ArrayList<Long> viewerIDs = new ArrayList<Long>();
     // check if null, then redirect
     Database.createDocument(name, language, documentID, userID);
     response.sendRedirect("/Document?documentHash=" + documentID);
