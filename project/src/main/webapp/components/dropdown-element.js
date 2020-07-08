@@ -63,6 +63,17 @@ export class DropdownElement extends LitElement {
     let event = new Event('change');
     this.dispatchEvent(event);
   }
+
+  createDropdownList() {
+    return this.options.map((option) => 
+      html`
+        <a href="#" 
+          @click=${() => this.toggleValue(option)} 
+          class="dropdown-item"> 
+          ${option} 
+        </a>
+      `)
+  }
   
   render() {
     let dropdownState = this.showDropdown ? 'is-active' : '';
@@ -86,13 +97,7 @@ export class DropdownElement extends LitElement {
           <div class="${'dropdown-menu ' + this.styling}" 
             id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-              ${this.options.map((option) => html`
-                  <a href="#" 
-                    @click=${() => this.toggleValue(option)} 
-                    class="dropdown-item"> 
-                    ${option} 
-                  </a>
-                `)}
+              ${this.createDropdownList()}
             </div>
           </div>
         </div>
