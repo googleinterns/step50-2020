@@ -7,6 +7,8 @@ export class DocsComponent extends LitElement {
       nickname: {type: String},
       email: {type: String},
       finishedGetRequest: {type: Boolean},
+      title: {type: String},
+      servlet: {type: String},
     };
   }
 
@@ -15,7 +17,9 @@ export class DocsComponent extends LitElement {
     this.documents = [];
     this.nickname = '';
     this.email = '';
-    this.finishedGetRequest = false; 
+    this.finishedGetRequest = false;
+    this.title = ''; 
+    this.servlet = ''; 
   }
 
   // Remove shadow DOM so styles are inherited
@@ -24,7 +28,7 @@ export class DocsComponent extends LitElement {
   }
 
   getServletData() {
-    fetch('/UserHome').then((response) => response.json()).then((documentsData) => { 
+    fetch(this.servlet).then((response) => response.json()).then((documentsData) => { 
       this.documents = JSON.parse(documentsData.documents);
       this.nickname = documentsData.nickname;
       this.email = documentsData.email;
@@ -50,7 +54,7 @@ export class DocsComponent extends LitElement {
           <a href="/_ah/logout?continue=%2FUser"> Sign out </a>
         </div>
         <div class="docs-component">
-          <div class="title">My Code Docs</div>
+          <div class="title">${this.title}</div>
           ${ empty && this.finishedGetRequest ? 
             html`
               <img class="float-right" src="../assets/empty-docs.png" />

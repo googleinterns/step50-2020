@@ -5,11 +5,13 @@ import {NavPanel} from './nav-panel.js';
 export class UserHome extends LitElement {
   static get properties() {
     return {
+      validForm: {type: Boolean},
     };
   }
 
   constructor() {
     super();
+    this.validForm = false;
   }
 
   // Remove shadow DOM so styles are inherited
@@ -33,6 +35,22 @@ export class UserHome extends LitElement {
     let modal = document.getElementById("new-folder-modal");
     modal.className = "modal";
   }
+  
+  createFolder(e) {
+    const form = e.target;
+    const input = form.querySelector('#name');
+    const name = input.value;
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/Folder", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("folderName=" + name);
+    this.hideModal();
+  }
+
+  validateForm(e) {
+    const input = e.target;
+    this.validForm = input.value.length > 0;
+  }
 
   render() {
     return html`  
@@ -45,9 +63,16 @@ export class UserHome extends LitElement {
               <button class="delete" aria-label="close" @click="${this.hideModal}" />
             </header>
             <section class="modal-card-body">
-              <form id="new-folder-form" @submit="${this.hideModal}">
-                <input type="name" placeholder="Write a new folder name..."/> 
-                <input type="submit" value="Create" class="primary-blue-btn">
+              <form id="new-folder-form" @submit="${(e) => this.createFolder(e)}">
+                <input @change=${(e) => this.validateForm(e)}  id="name" type="name" placeholder="Write a new folder name..."/> 
+                ${this.validForm ? 
+                  html`
+                    <input type="submit" value="Create" class="primary-blue-btn">
+                  ` :
+                  html`
+                    <input type="submit" value="Create" class="primary-blue-btn disabled" disabled>
+                  `
+                }
               </form>
             </section>
           </div>
