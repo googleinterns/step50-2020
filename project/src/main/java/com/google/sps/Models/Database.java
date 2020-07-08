@@ -161,6 +161,15 @@ public class Database {
     return new Document(name, language, hash, editorIDs, viewerIDs, ownerID, folderID);
   }
 
+  private static ArrayList<Document> getDocumentsByHash(ArrayList<String> docHashes) {
+    ArrayList<Document> docs = new ArrayList<Document>();
+    for (String hash : docHashes) {
+      Document doc = getDocumentByHash(hash);
+      docs.add(doc);
+    }
+    return docs;
+  }
+
   public static ArrayList<Long> getDocumentUsers(String hash) {
     Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
     Entity docEntity = getDatastore().prepare(query).asSingleEntity();
@@ -205,12 +214,7 @@ public class Database {
 
   public static ArrayList<Document> getUsersDocuments(long userID) {
     ArrayList<String> docHashes = getUsersDocumentsHashes(userID);
-    ArrayList<Document> docs = new ArrayList<Document>();
-    for (String hash : docHashes) {
-      Document doc = getDocumentByHash(hash);
-      docs.add(doc);
-    }
-    return docs;
+    return getDocumentsByHash(docHashes);
   }
 
   // Takes in a Document hash and a User email
@@ -338,6 +342,12 @@ public class Database {
       folders.add(getFolderByID(folderID));
     }
     return folders;
+  }
+  
+  public static ArrayList<Document> getFoldersDocuments(long folderID) {
+    Folder folder = getFolderByID(folderID);
+    ArrayList<String> docHashes = folder.getDocHashes();
+    return getDocumentsByHash(docHashes);
   }
 
   // Datastore does not support empty collections (it will be stored as null)
