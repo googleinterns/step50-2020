@@ -129,7 +129,7 @@ public class Database {
       Entity docEntity = new Entity("Document");
       ArrayList<Long> editorIDs = new ArrayList<Long>();
       ArrayList<Long> viewerIDs = new ArrayList<Long>();
-      long folderID = Document.DEFAULT_FOLDER_ID;
+      long folderID = Folder.DEFAULT_FOLDER_ID;
       
       docEntity.setProperty("name", name);
       docEntity.setProperty("language", language);
@@ -300,7 +300,7 @@ public class Database {
 
   public static void addDocumentToFolder(String docHash, long folderID) {
     long oldFolderID = changeDocumentFolder(docHash, folderID);
-    if (oldFolderID != Document.DEFAULT_FOLDER_ID) {
+    if (oldFolderID != Folder.DEFAULT_FOLDER_ID) {
       removeDocumentFromFolder(docHash, oldFolderID);
     }
     Query query = new Query("Folder").addFilter(

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Document {
-  public static long DEFAULT_FOLDER_ID = -1;
   String language, name, hash;
   // Using 3 array lists because making inherited 
   // user classes seems redundant as the classes themselves 
