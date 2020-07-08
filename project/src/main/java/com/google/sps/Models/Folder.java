@@ -3,6 +3,7 @@ package com.google.sps.models;
 import java.util.ArrayList;
 
 public class Folder {
+  public static long DEFAULT_FOLDER_ID = -1;
   String name;
   long folderID;
   ArrayList<String> docHashes;
