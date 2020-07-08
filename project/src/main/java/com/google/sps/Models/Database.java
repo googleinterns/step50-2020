@@ -95,18 +95,12 @@ public class Database {
   private static User createUser(String email, String nickname) {
     Entity userEntity = new Entity("User");
     ArrayList<String> docHashes = new ArrayList<String>();
-<<<<<<< HEAD
-=======
     ArrayList<Long> folderIDs = new ArrayList<Long>();
->>>>>>> Create Folder class and associated functions in Database
 
     userEntity.setProperty("email", email);
     userEntity.setProperty("nickname", nickname);
     userEntity.setProperty("docHashes", docHashes);
-<<<<<<< HEAD
-=======
     userEntity.setProperty("folderIDs", folderIDs);
->>>>>>> Create Folder class and associated functions in Database
     getDatastore().put(userEntity);
     long userID = userEntity.getKey().getId();
 
@@ -135,6 +129,7 @@ public class Database {
       Entity docEntity = new Entity("Document");
       ArrayList<Long> editorIDs = new ArrayList<Long>();
       ArrayList<Long> viewerIDs = new ArrayList<Long>();
+      long folderID = Document.DEFAULT_FOLDER_ID;
       
       docEntity.setProperty("name", name);
       docEntity.setProperty("language", language);
@@ -142,10 +137,11 @@ public class Database {
       docEntity.setProperty("ownerID", ownerID);
       docEntity.setProperty("editorIDs", editorIDs);
       docEntity.setProperty("viewerIDs", viewerIDs);
+      docEntity.setProperty("folderID", folderID);
       getDatastore().put(docEntity);
 
       addDocumentForUser(hash, ownerID);
-      return new Document(name, language, hash, editorIDs, viewerIDs, ownerID);
+      return new Document(name, language, hash, editorIDs, viewerIDs, ownerID, folderID);
   }
 
   public static Document getDocumentByHash(String hash) {
@@ -159,9 +155,10 @@ public class Database {
     String name = (String) docEntity.getProperty("name");
     String language = (String) docEntity.getProperty("language");
     long ownerID = (long) docEntity.getProperty("ownerID");
-    ArrayList<Long> editorIDs = (ArrayList)docEntity.getProperty("editorIDs");
-    ArrayList<Long> viewerIDs = (ArrayList)docEntity.getProperty("viewerIDs");
-    return new Document(name, language, hash, editorIDs, viewerIDs, ownerID);
+    ArrayList<Long> editorIDs = (ArrayList) docEntity.getProperty("editorIDs");
+    ArrayList<Long> viewerIDs = (ArrayList) docEntity.getProperty("viewerIDs");
+    long folderID = (long) docEntity.getProperty("folderID");
+    return new Document(name, language, hash, editorIDs, viewerIDs, ownerID, folderID);
   }
 
   public static ArrayList<Long> getDocumentUsers(String hash) {
@@ -277,6 +274,16 @@ public class Database {
     return new Folder(name, folderID, docHashes, userIDs); 
   }
 
+  public static Folder getFolderByID(long folderID) {
+    Query query = new Query("Folder").addFilter(
+        "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
+    Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
+    String name = (String) folderEntity.getProperty("name");
+    ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
+    ArrayList<Long> userIDs = getListProperty(folderEntity, "userIDs");
+    return new Folder(name, folderID, docHashes, userIDs); 
+  }
+
   public static void addFolderForUser(long userID, long folderID) {
     Query query = new Query("User").addFilter(
         "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("User", userID));
@@ -287,10 +294,36 @@ public class Database {
     getDatastore().put(userEntity);
   }
 
-  public static void addDocumentToFolder() {
-    // remove the doc hash for the user 
-    // add to folder docs
-    // union the users
+  public static void addDocumentToFolder(String docHash, long folderID) {
+    long oldFolderID = changeDocumentFolder(docHash, folderID);
+    if (oldFolderID != Document.DEFAULT_FOLDER_ID) {
+      removeDocumentFromFolder(docHash, oldFolderID);
+    }
+    Query query = new Query("Folder").addFilter(
+        "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
+    Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
+    ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
+    docHashes.add(docHash);
+    folderEntity.setProperty("docHashes", docHashes);
+    getDatastore().put(folderEntity);
+  }
+
+  private static void removeDocumentFromFolder(String docHash, long folderID) {
+    Query query = new Query("Folder").addFilter(
+        "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
+    Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
+    ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
+    docHashes.remove(docHash);
+    getDatastore().put(folderEntity);
+  }
+  
+  private static long changeDocumentFolder(String docHash, long folderID) {
+    Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, docHash);
+    Entity docEntity = getDatastore().prepare(query).asSingleEntity();
+    long oldFolderID = (long) docEntity.getProperty("folderID");
+    docEntity.setProperty("folderID", folderID);
+    getDatastore().put(docEntity);
+    return oldFolderID;
   }
 
   // Datastore does not support empty collections (it will be stored as null)

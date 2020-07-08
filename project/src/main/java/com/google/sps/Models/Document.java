@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Document {
+  public static long DEFAULT_FOLDER_ID = -1;
   String language, name, hash;
   // Using 3 array lists because making inherited 
   // user classes seems redundant as the classes themselves 
@@ -27,13 +28,14 @@ public class Document {
   ArrayList<Long> editorIDs = new ArrayList<Long>();
   ArrayList<Long> viewerIDs = new ArrayList<Long>();
   
-  Document(String name, String language, String hash, ArrayList<Long> editorIDs, ArrayList<Long> viewerIDs, long ownerID) {
+  Document(String name, String language, String hash, ArrayList<Long> editorIDs, ArrayList<Long> viewerIDs, long ownerID, long folderID) {
     this.name = name;
     this.language = language;
     this.hash = hash;
     this.ownerID = ownerID;
     this.editorIDs = editorIDs;
     this.viewerIDs = viewerIDs;
+    this.folderID = folderID;
   }
 
   public ArrayList<Long> getUserIDs() {
@@ -70,5 +72,9 @@ public class Document {
 
   public ArrayList<Long> getViewerIDs() {
     return viewerIDs;
+  }
+
+  public long getFolderID() {
+    return folderID;
   }
 }

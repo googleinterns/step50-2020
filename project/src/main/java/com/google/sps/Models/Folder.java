@@ -14,4 +14,20 @@ public class Folder {
     this.docHashes = docHashes;
     this.userIDs = userIDs;
   }
+
+  public String getName() {
+    return name;
+  }
+
+  public long getFolderID() {
+    return folderID;
+  }
+
+  public ArrayList<String> getDocHashes() {
+    return docHashes;
+  }
+
+  public ArrayList<Long> getUserIDs() {
+    return userIDs;
+  }
 }

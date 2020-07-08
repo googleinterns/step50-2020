@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @RunWith(JUnit4.class)
 public final class FolderTest {
@@ -39,7 +40,8 @@ public final class FolderTest {
   private static final String DOC_NAME_A = "Document A";
   private static final String DOC_LANGUAGE_A = "Java";
   private static final String DOC_HASH_A = "xmqw9h332";
-  private static final String FOLDER_A = "Test Folder";
+  private static final String FOLDER_A = "Test Folder A";
+  private static final String FOLDER_B = "Test Folder B";
 
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
@@ -57,24 +59,57 @@ public final class FolderTest {
   @Test
   public void testCreateFolder() {
     DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
-    User userA = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
-    Database.createFolder(FOLDER_A, userA.getUserID());
+    User user = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
+    Database.createFolder(FOLDER_A, user.getUserID());
 
     // Ensure user has folder
-    userA = Database.getUserByID(userA.getUserID());
-    ArrayList<Long> userFolderIDs = userA.getFolderIDs();
-    long userFolder = userFolderIDs.get(0);
-    Assert.assertEquals(1, userFolderIDs.size());
+    user = Database.getUserByID(user.getUserID());
 
     // Ensure database has folder entity
     Query folderQuery = new Query("Folder").addFilter("name", Query.FilterOperator.EQUAL, FOLDER_A);
     Entity folderEntity = ds.prepare(folderQuery).asSingleEntity();
     ArrayList<Long> userIDs = (ArrayList<Long>) folderEntity.getProperty("userIDs");
-    long folderUser = userIDs.get(0);
-    long folderID = folderEntity.getKey().getId();
     
-    Assert.assertEquals(1, userIDs.size());
-    Assert.assertEquals(userA.getUserID(), folderUser);
-    Assert.assertEquals(userFolder, folderID);
+    Assert.assertEquals(Arrays.asList(user.getUserID()), userIDs);
+    Assert.assertEquals(user.getFolderIDs(), Arrays.asList(folderEntity.getKey().getId()));
+  }
+
+  @Test
+  public void testGetFolderByID() {
+    DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+    User user = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
+    Folder folder = Database.createFolder(FOLDER_A, user.getUserID());
+    Folder queryFolder = Database.getFolderByID(folder.getFolderID());
+
+    Assert.assertEquals(folder.getName(), queryFolder.getName());
+    Assert.assertEquals(folder.getFolderID(), queryFolder.getFolderID());
+    Assert.assertEquals(folder.getDocHashes(), queryFolder.getDocHashes());
+    Assert.assertEquals(folder.getUserIDs(), queryFolder.getUserIDs());
+  }
+
+  @Test
+  public void testAddDocumentToFolder() {
+    User user = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
+    Document doc = Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, user.getUserID());
+    Folder folder = Database.createFolder(FOLDER_A, user.getUserID());
+    Database.addDocumentToFolder(doc.getHash(), folder.getFolderID());
+    folder = Database.getFolderByID(folder.getFolderID());
+    Assert.assertEquals(Arrays.asList(doc.getHash()), folder.getDocHashes());
+  }
+
+  @Test
+  public void testMoveDocumentFolders() {
+    User user = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
+    Document doc = Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, user.getUserID());
+    Folder folderA = Database.createFolder(FOLDER_A, user.getUserID());
+    Folder folderB = Database.createFolder(FOLDER_B, user.getUserID());
+   
+    Database.addDocumentToFolder(doc.getHash(), folderA.getFolderID());
+    Database.addDocumentToFolder(doc.getHash(), folderB.getFolderID());
+
+    folderA = Database.getFolderByID(folderA.getFolderID());
+    folderB = Database.getFolderByID(folderB.getFolderID());
+    Assert.assertEquals(Arrays.asList(), folderA.getDocHashes());
+    Assert.assertEquals(Arrays.asList(doc.getHash()), folderB.getDocHashes());
   }
 }

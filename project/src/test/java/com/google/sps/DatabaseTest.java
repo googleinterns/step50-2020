@@ -142,7 +142,6 @@ public final class DatabaseTest {
     //Assert.assertTrue(userIDs.contains(userA.getUserID()) && userIDs.size() == 1);
   }
 
-
   @Test
   public void testGetUsersDocuments() {
     DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
