@@ -326,6 +326,11 @@ public class Database {
     return oldFolderID;
   }
 
+  public static ArrayList<Long> getUsersFolderIDs(long userID) {
+    User user = getUserByID(userID);
+    return user.getFolderIDs();
+  }
+
   // Datastore does not support empty collections (it will be stored as null)
   // https://cloud.google.com/appengine/docs/standard/java/datastore/entities#Using_an_empty_list
   private static ArrayList getListProperty(Entity entity, String prop) {
