@@ -4,6 +4,7 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.*;
 import com.google.sps.models.Database;
+import com.google.sps.models.Folder;
 import com.google.sps.models.User;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,19 +24,31 @@ import javax.servlet.http.HttpServletResponse;
 public class FolderServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // if no argument, returns a list of folders w name + id
-    // if argument, return 
+    String url = request.getRequestURL().toString();
+    String[] urlSplit = url.split("folderID=");
+    boolean getFolderList = urlSplit.length == 1;
     long userID = (long) request.getSession(false).getAttribute("userID");
-    User user = Database.getUserByID(userID);
-    String documentsJSON = convertToJson(Database.getUsersDocuments(userID));
-    
-    HashMap<String, String> documentsData = new HashMap<String, String>();
-    documentsData.put("nickname", user.getNickname());
-    documentsData.put("email", user.getEmail());
-    documentsData.put("documents", documentsJSON);
-    String documentsDataJSON = convertToJson(documentsData);
-    response.setContentType("application/json;");
-    response.getWriter().println(documentsDataJSON);
+    if (getFolderList) {
+      // append new document and default
+      ArrayList<Folder> folders = Database.getUsersFolders(userID);
+      String foldersJSON = convertToJson(folders);
+      response.setContentType("application/json;");
+      response.getWriter().println(foldersJSON);
+    } else {
+      long folderID = Long.parseLong(urlSplit[1]);
+      User user = Database.getUserByID(userID);
+      Folder folder = Database.getFolderByID(folderID);
+      // get the folderID; probably also need foldername, etc 
+      String documentsJSON = convertToJson(Database.getFoldersDocuments(folderID));
+      HashMap<String, String> documentsData = new HashMap<String, String>();
+      documentsData.put("userNickname", user.getNickname());
+      documentsData.put("userEmail", user.getEmail());
+      documentsData.put("folderName", folder.getName());
+      documentsData.put("documents", documentsJSON);
+      String documentsDataJSON = convertToJson(documentsData);
+      response.setContentType("application/json;");
+      response.getWriter().println(documentsDataJSON);
+    }
   }
 
   // Accepts any Java Object, where each {key: value}
@@ -50,6 +63,6 @@ public class FolderServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String name = request.getParameter("folderName");
     long userID = (long) request.getSession(false).getAttribute("userID");
-    //Database.createFolder(name, userID);
+    Database.createFolder(name, userID);
   }
 }

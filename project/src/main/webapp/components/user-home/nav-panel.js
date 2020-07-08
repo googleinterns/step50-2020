@@ -11,6 +11,8 @@ export class NavPanel extends LitElement {
       validTitle: {type: Boolean},
       validDropdown: {type: Boolean},
       value: {type: String},
+      valueID: {type: Number},
+      folders: {type: Array},
     };
   }
 
@@ -59,6 +61,7 @@ export class NavPanel extends LitElement {
 
   getPanelValue(e) {
     this.value = e.target.value;
+    this.valueID = e.target.valueID;
     this.createChangeEvent();
   }
 
@@ -102,7 +105,7 @@ export class NavPanel extends LitElement {
           <button class="text-btn full-width"> My code docs </button>
           <panel-element 
             @change=${(e) => this.getPanelValue(e)}
-            .options="${this.languages}" 
+            .options="${this.folders}" 
             label="Folders"
             styling="full-width">
           </panel-element>

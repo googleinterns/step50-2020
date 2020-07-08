@@ -6,12 +6,17 @@ export class UserHome extends LitElement {
   static get properties() {
     return {
       validForm: {type: Boolean},
+      defaultFolderID: {type: Number},
+      folders: {type: Array},
     };
   }
 
   constructor() {
     super();
     this.validForm = false;
+    this.defaultFolderID = -1;
+   // this.folders = [];
+    this.folders = [{name: "New Folder", id: -1}, {name: "Another Folder", id: 0}];
   }
 
   // Remove shadow DOM so styles are inherited
@@ -21,7 +26,8 @@ export class UserHome extends LitElement {
 
   changeDocsComponent(e) {
     const folder = e.target.value;
-    if (folder == 'New Document') {
+    const folderID = e.target.valueID;
+    if (folderID === this.defaultFolderID) {
       this.showModal();
     }
   }
@@ -52,6 +58,12 @@ export class UserHome extends LitElement {
     this.validForm = input.value.length > 0;
   }
 
+  getFolders() {
+    fetch('/Folder').then((response) => response.json()).then((foldersData) => {
+      this.folders = JSON.parse(JSON.stringify(foldersData));
+    });
+  }
+
   render() {
     return html`  
       <div class="columns full-width full-height">
@@ -79,12 +91,15 @@ export class UserHome extends LitElement {
         </div>
         <div class="column is-one-quarter nav-panel">
           <nav-panel
-            @change=${(e) => this.changeDocsComponent(e)}>
+            @change=${(e) => this.changeDocsComponent(e)}
+            .folders=${this.folders}
+          >
           </nav-panel>
         </div>
         <div class="column is-three-quarters">
           <my-docs-component></my-docs-component>
         </div>
+        ${this.getFolders()}
       </div>      
     `;
   }
