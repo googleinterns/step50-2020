@@ -30,6 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -119,8 +120,29 @@ public final class FolderTest {
     Document doc = Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, user.getUserID());
     Folder folderA = Database.createFolder(FOLDER_A, user.getUserID());
     Folder folderB = Database.createFolder(FOLDER_B, user.getUserID());
-    ArrayList<Long> folders = Database.getUsersFolderIDs(user.getUserID());
+    ArrayList<Long> folderIDs = Database.getUsersFolderIDs(user.getUserID());
    
-    Assert.assertEquals(Arrays.asList(folderA.getFolderID(), folderB.getFolderID()), folders);
+    Assert.assertEquals(Arrays.asList(folderA.getFolderID(), folderB.getFolderID()), folderIDs);
+  }
+
+  @Test
+  public void testGetUsersFolders() {
+    User user = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
+    Document doc = Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, user.getUserID());
+    Folder folderA = Database.createFolder(FOLDER_A, user.getUserID());
+    Database.addDocumentToFolder(doc.getHash(), folderA.getFolderID());
+    folderA = Database.getFolderByID(folderA.getFolderID());
+    Folder folderB = Database.createFolder(FOLDER_B, user.getUserID());
+    List<Folder> expectedFolders = Arrays.asList(folderA, folderB);
+    ArrayList<Folder> actualFolders = Database.getUsersFolders(user.getUserID());
+    
+    for (int i=0; i<expectedFolders.size(); i++) {
+      Folder expectedFolder = expectedFolders.get(i);
+      Folder actualFolder = actualFolders.get(i);
+      Assert.assertEquals(expectedFolder.getName(), actualFolder.getName());
+      Assert.assertEquals(expectedFolder.getFolderID(), actualFolder.getFolderID());
+      Assert.assertEquals(expectedFolder.getDocHashes(), actualFolder.getDocHashes());
+      Assert.assertEquals(expectedFolder.getUserIDs(), actualFolder.getUserIDs());
+    }
   }
 }
