@@ -112,4 +112,15 @@ public final class FolderTest {
     Assert.assertEquals(Arrays.asList(), folderA.getDocHashes());
     Assert.assertEquals(Arrays.asList(doc.getHash()), folderB.getDocHashes());
   }
+
+  @Test
+  public void testGetUsersFolderIDs() {
+    User user = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
+    Document doc = Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, user.getUserID());
+    Folder folderA = Database.createFolder(FOLDER_A, user.getUserID());
+    Folder folderB = Database.createFolder(FOLDER_B, user.getUserID());
+    ArrayList<Long> folders = Database.getUsersFolderIDs(user.getUserID());
+   
+    Assert.assertEquals(Arrays.asList(folderA.getFolderID(), folderB.getFolderID()), folders);
+  }
 }
