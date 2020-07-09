@@ -64,7 +64,7 @@ public final class DatabaseTest {
 
     Assert.assertEquals(userA.getEmail(), (String) userEntity.getProperty("email"));
     Assert.assertEquals(userA.getNickname(), (String) userEntity.getProperty("nickname"));
-    Assert.assertEquals(0, userA.getDocs().size());
+    Assert.assertEquals(0, userA.getDocHashes().size());
   }
 
   @Test
@@ -74,7 +74,7 @@ public final class DatabaseTest {
     User databaseUser = Database.getUserByEmail(userA.getEmail());
     Assert.assertEquals(userA.getUserID(), databaseUser.getUserID());
     Assert.assertEquals(userA.getNickname(), databaseUser.getNickname());
-    Assert.assertEquals(userA.getDocs().size(), databaseUser.getDocs().size());
+    Assert.assertEquals(userA.getDocHashes().size(), databaseUser.getDocHashes().size());
   }
 
   @Test
@@ -84,7 +84,7 @@ public final class DatabaseTest {
     User databaseUser = Database.getUserByID(userA.getUserID());
     Assert.assertEquals(userA.getEmail(), databaseUser.getEmail());
     Assert.assertEquals(userA.getNickname(), databaseUser.getNickname());
-    Assert.assertEquals(userA.getDocs().size(), databaseUser.getDocs().size());
+    Assert.assertEquals(userA.getDocHashes().size(), databaseUser.getDocHashes().size());
   }
 
   @Test
@@ -115,7 +115,7 @@ public final class DatabaseTest {
     // Check that User Entity also contains new doc
     Query userQuery = new Query("User").addFilter("email", Query.FilterOperator.EQUAL, USER_EMAIL_A);
     Entity userEntity = ds.prepare(userQuery).asSingleEntity();
-    ArrayList<String> docHashes = (ArrayList) userEntity.getProperty("documents");
+    ArrayList<String> docHashes = (ArrayList) userEntity.getProperty("docHashes");
     Assert.assertTrue(docHashes.contains(hash) && docHashes.size() == 1);
   }
 
@@ -135,7 +135,6 @@ public final class DatabaseTest {
     User userA = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
     Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, userA.getUserID());
   }
-
 
   @Test
   public void testGetUsersDocuments() {
