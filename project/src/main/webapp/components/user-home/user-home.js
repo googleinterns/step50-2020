@@ -64,7 +64,7 @@ export class UserHome extends LitElement {
     modal.className = "modal";
   }
   
-  createFolder(e) {
+  createFolderRequest(e) {
     const form = e.target;
     const input = form.querySelector('#name');
     const name = input.value;
@@ -94,7 +94,7 @@ export class UserHome extends LitElement {
     console.log(this.moveFolderID);
   }
 
-  moveFolder() {
+  moveFolderRequest() {
     var xhttp = new XMLHttpRequest();
     xhttp.open("POST", "/MoveDocument", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -113,7 +113,7 @@ export class UserHome extends LitElement {
               <button class="delete" aria-label="close" @click="${() => this.hideModal("new-folder-modal")}" />
             </header>
             <section class="modal-card-body">
-              <form id="new-folder-form" @submit="${(e) => this.createFolder(e)}">
+              <form id="new-folder-form" @submit="${(e) => this.createFolderRequest(e)}">
                 <input @change=${(e) => this.validateForm(e)}  id="name" type="name" placeholder="Write a new folder name..."/> 
                 ${this.validForm ? 
                   html`
@@ -131,13 +131,14 @@ export class UserHome extends LitElement {
           <div class="modal-background"></div>
           <div class="modal-card">
             <header class="modal-card-head">
-              <p class="modal-card-title">Move ${this.moveDoc} to...</p>
+              <p class="modal-card-title">Move ${this.moveDoc}</p>
               <button class="delete" aria-label="close" @click="${() => this.hideModal("move-folder-modal")}" />
             </header>
             <section class="modal-card-body">
-              <form id="new-folder-form" @submit="${this.moveFolder}">
-                <input class="white-input" value=${this.moveFolder} id="move-folder-name" readonly="readonly" />
-                <div>
+              <form id="new-folder-form" @submit="${this.moveFolderRequest}">
+                <p>Select a folder from this list, and your document will 
+                appear when you navigate to that folder.</p>
+                <div class="move-folder-list">
                   ${this.folders.map((folder) => html`
                       <a href="#" 
                         class="dropdown-item"
@@ -147,7 +148,10 @@ export class UserHome extends LitElement {
                       </a>
                     `)}
                 </div>
-                <input type="submit" class="primary-blue-btn">
+                <div>
+                  <input class="white-input" value=${this.moveFolder} id="move-folder-name" readonly="readonly" />
+                  <input type="submit" class="primary-blue-btn">
+                </div>
               </form>
             </section>
           </div>
