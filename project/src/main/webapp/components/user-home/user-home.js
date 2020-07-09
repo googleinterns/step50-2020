@@ -58,6 +58,10 @@ export class UserHome extends LitElement {
     this.validForm = input.value.length > 0;
   }
 
+  firstUpdated() {
+    this.getFolders();
+  }
+
   getFolders() {
     fetch('/Folder').then((response) => response.json()).then((foldersData) => {
       this.defaultFolderID = foldersData.defaultFolderID;
@@ -113,7 +117,6 @@ export class UserHome extends LitElement {
             `
           }
         </div>
-        ${this.getFolders()}
       </div>      
     `;
   }

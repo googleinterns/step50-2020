@@ -27,17 +27,24 @@ export class DocsComponent extends LitElement {
     return this;
   }
 
-  getServletData() {
+  updated(changedProperties) {
+    if (changedProperties.servlet != this.servlet) {
+      this.getDocuments();
+    }
+  }
+
+  getDocuments() {
     fetch(this.servlet).then((response) => response.json()).then((documentsData) => {
       this.nickname = documentsData.nickname;
       this.email = documentsData.email;
       try {
-        this.documents = JSON.parse(JSON.stringify(documentsData.documents));
+        this.documents = JSON.parse(documentsData.documents);
       } catch(err) {
-        console.log("Error retrieving documents");
+        this.documents = JSON.parse(JSON.stringify(documentsData.documents));
       }
     });
     this.finishedGetRequest = true;
+    
   }
 
   // Open document in new tab, else if operation is blocked load the doc in the same tab
@@ -81,7 +88,6 @@ export class DocsComponent extends LitElement {
               <ul>
             `
           }
-          ${this.getServletData()}
         </div>
       </div>
     `;

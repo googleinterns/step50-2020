@@ -26,7 +26,7 @@ public class FolderServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String url = request.getRequestURL().toString();
     String folderIDString = (String) request.getParameter("folderID");
-    boolean getFolderList = folderIDString == null || folderIDString.length() > 0;
+    boolean getFolderList = folderIDString == null || folderIDString.length() == 0;
     long userID = (long) request.getSession(false).getAttribute("userID");
     if (getFolderList) {
       ArrayList<Folder> folders = Database.getUsersFolders(userID);
