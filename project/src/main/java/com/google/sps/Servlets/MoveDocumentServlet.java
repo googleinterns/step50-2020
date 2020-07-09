@@ -13,7 +13,7 @@ import javax.servlet.ServletException;
 import com.google.sps.models.Database;
 
 @WebServlet("/MoveDocument")
-public class DocumentServlet extends HttpServlet {
+public class MoveDocumentServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     String docHash = request.getParameter("docHash");
