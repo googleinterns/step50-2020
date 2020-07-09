@@ -66,10 +66,6 @@ export class DocsComponent extends LitElement {
                           ${doc.language}
                         </span>
                       </div>
-                      <div class="shared-with-text">
-                        <b> Shared with </b> 
-                        ${doc.userIDs.toString()}
-                      </div>
                     </li>
                 `)}
               <ul>

@@ -17,18 +17,34 @@ package com.google.sps.models;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Document{
+public class Document {
   String language, name, hash;
-  ArrayList<Long> userIDs = new ArrayList<Long>();
+  // Using 3 array lists because making inherited 
+  // user classes seems redundant as the classes themselves 
+  // will have no extra functionality, all functions that are special
+  // to the permissions will be done in Document and Database not User
+  long ownerID;
+  ArrayList<Long> editorIDs = new ArrayList<Long>();
+  ArrayList<Long> viewerIDs = new ArrayList<Long>();
   
-  Document(String name, String language, String hash, ArrayList<Long> userIDs) {
+  Document(String name, String language, String hash, ArrayList<Long> editorIDs, ArrayList<Long> viewerIDs, long ownerID) {
     this.name = name;
     this.language = language;
     this.hash = hash;
-    this.userIDs = userIDs;
+    this.ownerID = ownerID;
+    this.editorIDs = editorIDs;
+    this.viewerIDs = viewerIDs;
   }
 
   public ArrayList<Long> getUserIDs() {
+    ArrayList<Long> userIDs = new ArrayList<Long>();
+    if (editorIDs.size() > 0) {
+      userIDs.addAll(editorIDs);
+    }
+    if (viewerIDs.size() > 0) {
+      userIDs.addAll(viewerIDs);
+    }
+    userIDs.add(ownerID);
     return userIDs;
   }
 
@@ -42,5 +58,17 @@ public class Document{
 
   public String getHash() {
     return hash;
+  }
+
+  public long getOwnerID() {
+    return ownerID;
+  }
+
+  public ArrayList<Long> getEditorIDs() {
+    return editorIDs;
+  }
+
+  public ArrayList<Long> getViewerIDs() {
+    return viewerIDs;
   }
 }

@@ -41,6 +41,9 @@ import javax.servlet.http.HttpServletResponse;
 
 public class Database {
 
+  public static final String EDITOR = "Editor";
+  public static final String VIEWER = "Viewer";
+
   private static DatastoreService getDatastore() {
     return DatastoreServiceFactory.getDatastoreService();
   }
@@ -118,20 +121,22 @@ public class Database {
   }
 
   /* Document Entity */
-  public static Document createDocument(String name, String language, String hash, long userID) {
+  public static Document createDocument(String name, String language, String hash, long ownerID) {
       // Static version where when document is shared, the userID gets appended to the array.
       Entity docEntity = new Entity("Document");
-      ArrayList<Long> userIDs = new ArrayList<Long>();
+      ArrayList<Long> editorIDs = new ArrayList<Long>();
+      ArrayList<Long> viewerIDs = new ArrayList<Long>();
       
       docEntity.setProperty("name", name);
       docEntity.setProperty("language", language);
       docEntity.setProperty("hash", hash);
-      userIDs.add(userID);
-      docEntity.setProperty("userIDs", userIDs);
+      docEntity.setProperty("ownerID", ownerID);
+      docEntity.setProperty("editorIDs", editorIDs);
+      docEntity.setProperty("viewerIDs", viewerIDs);
       getDatastore().put(docEntity);
 
-      addDocumentForUser(hash, userID);
-      return new Document(name, language, hash, userIDs);
+      addDocumentForUser(hash, ownerID);
+      return new Document(name, language, hash, editorIDs, viewerIDs, ownerID);
   }
 
   public static Document getDocumentByHash(String hash) {
@@ -144,8 +149,10 @@ public class Database {
 
     String name = (String) docEntity.getProperty("name");
     String language = (String) docEntity.getProperty("language");
-    ArrayList<Long> userIDs = (ArrayList)docEntity.getProperty("userIDs");
-    return new Document(name, language, hash, userIDs);
+    long ownerID = (long) docEntity.getProperty("ownerID");
+    ArrayList<Long> editorIDs = getListProperty(docEntity, "editorIDs");
+    ArrayList<Long> viewerIDs = getListProperty(docEntity, "viewerIDs");
+    return new Document(name, language, hash, editorIDs, viewerIDs, ownerID);
   }
 
   public static ArrayList<Long> getDocumentUsers(String hash) {
@@ -156,8 +163,35 @@ public class Database {
       return null;
     }
 
-    ArrayList<Long> userIDs = getListProperty(docEntity, "userIDs");
+    Document doc = getDocumentByHash(hash);
+    ArrayList<Long> userIDs = doc.getUserIDs();
     return userIDs;
+  }
+
+  public static ArrayList<Long> getDocumentEditors(String hash) {
+    Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
+    Entity docEntity = getDatastore().prepare(query).asSingleEntity();
+
+    if (docEntity == null) {
+      return null;
+    }
+
+    Document doc = getDocumentByHash(hash);
+    ArrayList<Long> editorIDs = doc.getEditorIDs();
+    return editorIDs;
+  }
+
+  public static ArrayList<Long> getDocumentViewers(String hash) {
+    Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
+    Entity docEntity = getDatastore().prepare(query).asSingleEntity();
+
+    if (docEntity == null) {
+      return null;
+    }
+
+    Document doc = getDocumentByHash(hash);
+    ArrayList<Long> viewerIDs = doc.getViewerIDs();
+    return viewerIDs;
   }
 
   public static ArrayList<Document> getUsersDocuments(long userID) {
@@ -174,7 +208,7 @@ public class Database {
   // Adds the userID to the Document's list of Users
   // Adds the Document's hash to the User's list of Documents
   // Returns true if successful, false if the user doesn't exist
-  public static boolean shareDocument(String hash, String email) {
+  public static boolean shareDocument(String hash, String email, String permissions) {
     Query query = new Query("User").addFilter("email", Query.FilterOperator.EQUAL, email);
     Entity userEntity = getDatastore().prepare(query).asSingleEntity();
 
@@ -189,21 +223,31 @@ public class Database {
     }
 
     addDocumentForUser(hash, userID);
-    addUserForDocument(hash, userID);
+    addUserForDocument(hash, userID, permissions);
 
     return true;
   }
 
   // Takes a Document hash and a userID
   // Adds the userID to the Document's list of users
-  public static void addUserForDocument(String hash, long userID) {
+  public static void addUserForDocument(String hash, long userID, String permissions) {
     Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
     Entity docEntity = getDatastore().prepare(query).asSingleEntity();
-    ArrayList<Long> userIDs = getDocumentUsers(hash);
 
-    userIDs.add(userID);
-    docEntity.setProperty("userIDs", userIDs);
-    getDatastore().put(docEntity);
+    if (permissions.equals(EDITOR)) {
+      ArrayList<Long> editorIDs = getDocumentEditors(hash);
+
+      editorIDs.add(userID);
+      docEntity.setProperty("editorIDs", editorIDs);
+      getDatastore().put(docEntity);
+    }
+    else if (permissions.equals(VIEWER)) {
+      ArrayList<Long> viewerIDs = getDocumentViewers(hash);
+
+      viewerIDs.add(userID);
+      docEntity.setProperty("viewerIDs", viewerIDs);
+      getDatastore().put(docEntity);
+    }
   }
     
   // Datastore does not support empty collections (it will be stored as null)
