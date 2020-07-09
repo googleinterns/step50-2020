@@ -155,8 +155,8 @@ public class Database {
     String name = (String) docEntity.getProperty("name");
     String language = (String) docEntity.getProperty("language");
     long ownerID = (long) docEntity.getProperty("ownerID");
-    ArrayList<Long> editorIDs = (ArrayList) docEntity.getProperty("editorIDs");
-    ArrayList<Long> viewerIDs = (ArrayList) docEntity.getProperty("viewerIDs");
+    ArrayList<Long> editorIDs = getListProperty(docEntity, "editorIDs");
+    ArrayList<Long> viewerIDs = getListProperty(docEntity, "viewerIDs");
     long folderID = (long) docEntity.getProperty("folderID");
     return new Document(name, language, hash, editorIDs, viewerIDs, ownerID, folderID);
   }
