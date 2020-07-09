@@ -222,6 +222,11 @@
         a.download = '<%= document.getName() %>' + "." + extDict["<%= document.getLanguage() %>"];
         a.click();
       }
+
+      //get firepad html
+      func getFirepadHTML() {
+        console.log(firepad.getHtml());
+      }
     </script>
   </body>
 </html>
