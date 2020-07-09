@@ -1,5 +1,6 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
 import {MyDocsComponent} from './my-docs-component.js';
+import {FolderComponent} from './folder-component.js';
 import {NavPanel} from './nav-panel.js';
 
 export class UserHome extends LitElement {
@@ -15,8 +16,9 @@ export class UserHome extends LitElement {
     super();
     this.validForm = false;
     this.defaultFolderID = -1;
-   // this.folders = [];
-    this.folders = [{name: "New Folder", id: -1}, {name: "Another Folder", id: 0}];
+    this.folders = [];
+    this.folder = '';
+    this.folderID = -1;
   }
 
   // Remove shadow DOM so styles are inherited
@@ -25,11 +27,9 @@ export class UserHome extends LitElement {
   }
 
   changeDocsComponent(e) {
-    const folder = e.target.value;
-    const folderID = e.target.valueID;
-    if (folderID === this.defaultFolderID) {
-      this.showModal();
-    }
+    this.folder = e.target.value;
+    this.folderID = e.target.valueID;
+    this.requestUpdate(); 
   }
 
   showModal() {
@@ -60,7 +60,8 @@ export class UserHome extends LitElement {
 
   getFolders() {
     fetch('/Folder').then((response) => response.json()).then((foldersData) => {
-      this.folders = JSON.parse(JSON.stringify(foldersData));
+      this.defaultFolderID = foldersData.defaultFolderID;
+      this.folders = JSON.parse(JSON.stringify(foldersData.folders));
     });
   }
 
@@ -92,12 +93,25 @@ export class UserHome extends LitElement {
         <div class="column is-one-quarter nav-panel">
           <nav-panel
             @change=${(e) => this.changeDocsComponent(e)}
+            @new-folder="${this.showModal}"
             .folders=${this.folders}
+            defaultFolderID=${this.defaultFolderID}
           >
           </nav-panel>
         </div>
         <div class="column is-three-quarters">
-          <my-docs-component></my-docs-component>
+          ${(this.folderID !== this.defaultFolderID && this.folder.length > 0) ?
+            html`
+              <folder-component
+                title=${this.folder}
+                servlet=${'/Folder?folderID=' + this.folderID}
+              >
+              </folder-component>
+            ` :
+            html`
+              <my-docs-component></my-docs-component>
+            `
+          }
         </div>
         ${this.getFolders()}
       </div>      

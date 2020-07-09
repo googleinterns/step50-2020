@@ -25,25 +25,25 @@ public class FolderServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String url = request.getRequestURL().toString();
-    String[] urlSplit = url.split("folderID=");
-    boolean getFolderList = urlSplit.length == 1;
+    String folderIDString = (String) request.getParameter("folderID");
+    boolean getFolderList = folderIDString == null || folderIDString.length() > 0;
     long userID = (long) request.getSession(false).getAttribute("userID");
     if (getFolderList) {
-      // append new document and default
       ArrayList<Folder> folders = Database.getUsersFolders(userID);
-      String foldersJSON = convertToJson(folders);
+      HashMap<String, Object> foldersData = new HashMap<String, Object>();
+      foldersData.put("defaultFolderID", Folder.DEFAULT_FOLDER_ID);
+      foldersData.put("folders", folders);
+      String foldersDataJSON = convertToJson(foldersData);
       response.setContentType("application/json;");
-      response.getWriter().println(foldersJSON);
+      response.getWriter().println(foldersDataJSON);
     } else {
-      long folderID = Long.parseLong(urlSplit[1]);
+      long folderID = Long.parseLong(folderIDString);
       User user = Database.getUserByID(userID);
       Folder folder = Database.getFolderByID(folderID);
-      // get the folderID; probably also need foldername, etc 
       String documentsJSON = convertToJson(Database.getFoldersDocuments(folderID));
       HashMap<String, String> documentsData = new HashMap<String, String>();
-      documentsData.put("userNickname", user.getNickname());
-      documentsData.put("userEmail", user.getEmail());
-      documentsData.put("folderName", folder.getName());
+      documentsData.put("nickname", user.getNickname());
+      documentsData.put("email", user.getEmail());
       documentsData.put("documents", documentsJSON);
       String documentsDataJSON = convertToJson(documentsData);
       response.setContentType("application/json;");

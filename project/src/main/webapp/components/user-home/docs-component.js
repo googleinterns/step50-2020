@@ -28,10 +28,14 @@ export class DocsComponent extends LitElement {
   }
 
   getServletData() {
-    fetch(this.servlet).then((response) => response.json()).then((documentsData) => { 
-      this.documents = JSON.parse(documentsData.documents);
+    fetch(this.servlet).then((response) => response.json()).then((documentsData) => {
       this.nickname = documentsData.nickname;
       this.email = documentsData.email;
+      try {
+        this.documents = JSON.parse(JSON.stringify(documentsData.documents));
+      } catch(err) {
+        console.log("Error retrieving documents");
+      }
     });
     this.finishedGetRequest = true;
   }
@@ -39,7 +43,7 @@ export class DocsComponent extends LitElement {
   // Open document in new tab, else if operation is blocked load the doc in the same tab
   loadDocument(hash) {
     const docLink = "/Document?documentHash=" + hash;
-    window.open(docLink) || window.location.replace(docLink);
+    window.open(docLink, '_blank') || window.location.replace(docLink);
   }
 
   render() {
@@ -71,10 +75,6 @@ export class DocsComponent extends LitElement {
                         <span class="tag tag-bordered">
                           ${doc.language}
                         </span>
-                      </div>
-                      <div class="shared-with-text">
-                        <b> Shared with </b> 
-                        ${doc.userIDs.toString()}
                       </div>
                     </li>
                 `)}

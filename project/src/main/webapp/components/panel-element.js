@@ -1,7 +1,7 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
 import {DropdownElement} from './dropdown-element.js';
 
-// Options must be a list of format [{name: x, id: y}, ...]
+// Options must be a list of format [{name: x, folderID: y}, ...]
 export class PanelElement extends DropdownElement {
   static get properties() {
     return {
@@ -18,7 +18,7 @@ export class PanelElement extends DropdownElement {
 
   toggleValue(item) {
     this.value = item.name;
-    this.valueID = item.id;
+    this.valueID = item.folderID;
     if (this.hideOnSelect) {
       this.toggleDropdown();
     }

@@ -12,6 +12,7 @@ export class NavPanel extends LitElement {
       validDropdown: {type: Boolean},
       value: {type: String},
       valueID: {type: Number},
+      defaultFolderID: {type: Number},
       folders: {type: Array},
     };
   }
@@ -70,6 +71,17 @@ export class NavPanel extends LitElement {
     this.dispatchEvent(event);
   }
 
+  noFolder() {
+    this.value = '';
+    this.valueID = this.defaultFolderID;
+    this.createChangeEvent();
+  }
+
+  newFolderEvent() {
+    let newFolderEvent = new CustomEvent('new-folder');
+    this.dispatchEvent(newFolderEvent);
+  }
+
   render() {
     const disableSubmit = this.validTitle && this.validDropdown ? false: true;
     return html`
@@ -102,13 +114,18 @@ export class NavPanel extends LitElement {
           }
         </form>
         <div class="nav-btn-group">
-          <button class="text-btn full-width"> My code docs </button>
-          <panel-element 
-            @change=${(e) => this.getPanelValue(e)}
-            .options="${this.folders}" 
-            label="Folders"
-            styling="full-width">
-          </panel-element>
+          <button class="text-btn full-width" @click="${this.noFolder}"> My code docs </button>
+          <div class="folder-btn-group">
+            <panel-element 
+              @change=${(e) => this.getPanelValue(e)}
+              .options="${this.folders}" 
+              label="Folders"
+              styling="full-width">
+            </panel-element>
+            <button class="plain-btn" @click="${this.newFolderEvent}">
+              <img src="../assets/new-folder.png" />
+            </button>
+          </div>
         </div>
       </div>
     `;
