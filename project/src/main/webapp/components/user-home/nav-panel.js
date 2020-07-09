@@ -1,5 +1,6 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
 import {DropdownElement} from '../dropdown-element.js';
+import {PanelElement} from '../panel-element.js';
 
 export class NavPanel extends LitElement {
   static get properties() {
@@ -8,7 +9,11 @@ export class NavPanel extends LitElement {
       documentID: {type: String},
       formDisabled: {type: String},
       validTitle: {type: Boolean},
-      validDropdown: {type: Boolean}
+      validDropdown: {type: Boolean},
+      value: {type: String},
+      valueID: {type: Number},
+      defaultFolderID: {type: Number},
+      folders: {type: Array},
     };
   }
 
@@ -55,6 +60,28 @@ export class NavPanel extends LitElement {
     this.validDropdown = dropdown.value.length > 0;
   }
 
+  setPanelValue(e) {
+    this.value = e.target.value;
+    this.valueID = e.target.valueID;
+    this.createChangeEvent();
+  }
+
+  setPanelValueAsMyDocs() {
+    this.value = '';
+    this.valueID = this.defaultFolderID;
+    this.createChangeEvent();
+  }
+
+  createChangeEvent() {
+    let event = new Event('change');
+    this.dispatchEvent(event);
+  }
+
+  createNewFolderEvent() {
+    let newFolderEvent = new CustomEvent('new-folder');
+    this.dispatchEvent(newFolderEvent);
+  }
+
   render() {
     const disableSubmit = this.validTitle && this.validDropdown ? false: true;
     return html`
@@ -87,8 +114,18 @@ export class NavPanel extends LitElement {
           }
         </form>
         <div class="nav-btn-group">
-          <button class="text-btn full-width"> My code docs </button>
-          <button class="text-btn full-width"> Shared with me </button>
+          <button class="text-btn full-width" @click="${this.setPanelValueAsMyDocs}"> My code docs </button>
+          <div class="folder-btn-group">
+            <panel-element 
+              @change=${(e) => this.getPanelValue(e)}
+              .options="${this.folders}" 
+              label="Folders"
+              styling="full-width">
+            </panel-element>
+            <button class="plain-btn" @click="${this.createNewFolderEvent}">
+              <img src="../assets/new-folder.png" />
+            </button>
+          </div>
         </div>
       </div>
     `;
