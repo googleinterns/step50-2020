@@ -38,6 +38,16 @@ export class DocsComponent extends LitElement {
     window.open(docLink) || window.location.replace(docLink);
   }
 
+  createMoveFolderEvent(docName, docHash) {
+    let moveFolderEvent = new CustomEvent('move-folder', {
+      detail: {
+        name: docName,
+        hash: docHash,
+      }
+    });
+    this.dispatchEvent(moveFolderEvent);
+  }
+
   render() {
     const empty = this.documents.length == 0;
     return html`        
@@ -57,7 +67,7 @@ export class DocsComponent extends LitElement {
             html`
               <ul class="docs-list">
                 ${this.documents.map((doc) => html`
-                    <li>
+                    <li @click="${() => this.createMoveFolderEvent(doc.name, doc.hash)}">
                       <div>
                         <a @click=${() => this.loadDocument(doc.hash)}>
                           ${doc.name}
