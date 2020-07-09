@@ -59,16 +59,17 @@
         padding-left: 20px;
       }
 
-      .return-home {
-        right: 40px;
-        top: 25px;
-        position: absolute;
+      .btn-group {
+        float: right;
+        display: flex;
+        justify-content: space-between;
+        width: 215px;
+        margin-right: 25px;
+        margin-top: 5px
       }
 
-      .share{
-        position: absolute;
-        right: 160px;
-        top: 25px;
+      a {
+        margin-top: -10px;
       }
 
       .permissions {
@@ -90,15 +91,11 @@
         <% } else {
           response.sendRedirect("/");  
         } %>
-    </div>
-    <div class="share" id="share_btn">
-      <button class="white-btn" onclick="showModal()"> Share </button>
-    </div>
-    <div class="return-home">
-      <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
-    </div>
-    <div class="share">
-      <button class="white-btn" onclick="download()"> Download </a>
+        <div class="btn-group">
+          <button class="white-btn" onclick="showModal()"> Share </button>
+          <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
+          <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
+        </div>
     </div>
     <div class="toolbar">
       <toolbar-component onclick="changeTheme()"></toolbar-component>
