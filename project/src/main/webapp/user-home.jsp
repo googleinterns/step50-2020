@@ -4,12 +4,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>User's Documents</title>
+    <title>Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
     <link rel="stylesheet" href="main.css" />
-    <script type="module" src="./components/user-home/nav-panel.js"></script>
-    <script type="module" src="./components/user-home/docs-component.js"></script>
+    <script type="module" src="./components/user-home/user-home.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script>
@@ -26,27 +25,9 @@
           response.sendRedirect("/");  
         } %>
   </head>
-  <style>
-    .sign-out {
-      margin-top: 10px;
-      position: absolute;
-      top: 500px;
-      left: 140px;
-    }
-  </style>
 
   <body>
-    <div class="columns full-width full-height">
-      <div class="column is-one-quarter nav-panel">
-        <nav-panel></nav-panel>
-      </div>
-      <div class="column is-three-quarters">
-        <docs-component></docs-component>
-      </div>
-    </div>
-    <div class="sign-out">
-      <a href="/_ah/logout?continue=https://accounts.google.com/Logout%3Fcontinue%3Dhttps://appengine.google.com/_ah/logout%253Fcontinue%253Dhttps://google.com/url%25253Fsa%25253DD%252526q%25253Dhttps://step-collaborative-code-editor.uc.r.appspot.com/User%252526ust%25253D1594489239991384%252526usg%25253DAFQjCNErDNx1Pps-gTuvqlRbUPIe01wpgA%26service%3Dah"><button class="primary-blue-btn"> Sign out </button></a>
-    </div>
+    <user-home></user-home>
     <div id="ajaxResponse"></div>
     <script>
       function loadDocument(documentHash) {
