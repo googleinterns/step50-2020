@@ -96,7 +96,7 @@ export class UserHome extends LitElement {
         </div>
         <div class="column is-one-quarter nav-panel">
           <nav-panel
-            @change=${(e) => this.changeDocsComponent(e)}
+            @toggle-folder=${(e) => this.changeDocsComponent(e)}
             @new-folder="${this.showModal}"
             .folders=${this.folders}
             defaultFolderID=${this.defaultFolderID}
