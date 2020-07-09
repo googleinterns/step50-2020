@@ -19,7 +19,7 @@ export class NavPanel extends LitElement {
 
   constructor() {
     super();
-    this.languages = ['New Document','C++', 'Go', 'Python', 'Java', 'Javascript'];
+    this.languages = ['C++', 'Go', 'Python', 'Java', 'Javascript'];
     this.documentID = '';
     this.placeholder = 'Write a document title...';
     this.formDisabled = '';
@@ -60,9 +60,15 @@ export class NavPanel extends LitElement {
     this.validDropdown = dropdown.value.length > 0;
   }
 
-  getPanelValue(e) {
+  setPanelValue(e) {
     this.value = e.target.value;
     this.valueID = e.target.valueID;
+    this.createChangeEvent();
+  }
+
+  setPanelValueAsMyDocs() {
+    this.value = '';
+    this.valueID = this.defaultFolderID;
     this.createChangeEvent();
   }
 
@@ -71,13 +77,7 @@ export class NavPanel extends LitElement {
     this.dispatchEvent(event);
   }
 
-  noFolder() {
-    this.value = '';
-    this.valueID = this.defaultFolderID;
-    this.createChangeEvent();
-  }
-
-  newFolderEvent() {
+  createNewFolderEvent() {
     let newFolderEvent = new CustomEvent('new-folder');
     this.dispatchEvent(newFolderEvent);
   }
@@ -114,7 +114,7 @@ export class NavPanel extends LitElement {
           }
         </form>
         <div class="nav-btn-group">
-          <button class="text-btn full-width" @click="${this.noFolder}"> My code docs </button>
+          <button class="text-btn full-width" @click="${this.setPanelValueAsMyDocs}"> My code docs </button>
           <div class="folder-btn-group">
             <panel-element 
               @change=${(e) => this.getPanelValue(e)}
@@ -122,7 +122,7 @@ export class NavPanel extends LitElement {
               label="Folders"
               styling="full-width">
             </panel-element>
-            <button class="plain-btn" @click="${this.newFolderEvent}">
+            <button class="plain-btn" @click="${this.createNewFolderEvent}">
               <img src="../assets/new-folder.png" />
             </button>
           </div>

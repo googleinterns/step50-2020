@@ -43,8 +43,11 @@ export class DocsComponent extends LitElement {
         this.documents = JSON.parse(JSON.stringify(documentsData.documents));
       }
     });
-    this.finishedGetRequest = true;
-    
+    this.finishedGetRequest = true; 
+  }
+
+  addToFolder(e, hash) {
+    console.log(e);
   }
 
   // Open document in new tab, else if operation is blocked load the doc in the same tab
@@ -74,7 +77,7 @@ export class DocsComponent extends LitElement {
             html`
               <ul class="docs-list">
                 ${this.documents.map((doc) => html`
-                    <li>
+                    <li @click=${(e) => this.addToFolder(e, doc.hash)}>
                       <div>
                         <a @click=${() => this.loadDocument(doc.hash)}>
                           ${doc.name}

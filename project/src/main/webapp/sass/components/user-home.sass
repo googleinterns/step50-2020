@@ -18,15 +18,23 @@
     button
       text-align: left
     // Style panel's trigger button
-    .dropdown
-      .dropdown-trigger
-        button
-          @extend .plain-btn
-      .dropdown-menu
-        height: 150px
-        overflow: scroll
-        .dropdown-content
-          box-shadow: none
+    .folder-btn-group
+      display: flex
+      width: 100%
+      justify-content: space-between
+      img
+        width: 45px
+        height: 30px
+        margin-left: 100px
+      .dropdown
+        .dropdown-trigger
+          button
+            @extend .plain-btn
+        .dropdown-menu
+          height: 150px
+          overflow: scroll
+          .dropdown-content
+            box-shadow: none
 
 .user-info
   float: right

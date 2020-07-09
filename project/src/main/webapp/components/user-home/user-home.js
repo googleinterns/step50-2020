@@ -21,6 +21,17 @@ export class UserHome extends LitElement {
     this.folderID = -1;
   }
 
+  firstUpdated() {
+    this.getFolders();
+  }
+
+  getFolders() {
+    fetch('/Folder').then((response) => response.json()).then((foldersData) => {
+      this.defaultFolderID = foldersData.defaultFolderID;
+      this.folders = JSON.parse(JSON.stringify(foldersData.folders));
+    });
+  }
+
   // Remove shadow DOM so styles are inherited
   createRenderRoot() {
     return this;
@@ -56,17 +67,6 @@ export class UserHome extends LitElement {
   validateForm(e) {
     const input = e.target;
     this.validForm = input.value.length > 0;
-  }
-
-  firstUpdated() {
-    this.getFolders();
-  }
-
-  getFolders() {
-    fetch('/Folder').then((response) => response.json()).then((foldersData) => {
-      this.defaultFolderID = foldersData.defaultFolderID;
-      this.folders = JSON.parse(JSON.stringify(foldersData.folders));
-    });
   }
 
   render() {
