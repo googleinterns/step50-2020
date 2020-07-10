@@ -81,8 +81,9 @@ export class NavPanel extends LitElement {
     const disableSubmit = this.validTitle && this.validDropdown ? false: true;
     return html`
       <div>
-        <form class="new-doc-group" id="new-doc-form" action=${'/UserHome?formID=' + this.valueID} method="POST" onsubmit=${
+        <form class="new-doc-group" id="new-doc-form" action="/UserHome" method="POST" onsubmit=${
         this.createDocument()}>
+          <input type="hidden" name="folderID" value=${this.valueID}>
           <input 
             @change=${(e) => this.validateTitle(e)} 
             name="title" id="new-doc-title" 

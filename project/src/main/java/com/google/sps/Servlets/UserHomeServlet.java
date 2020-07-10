@@ -51,7 +51,7 @@ public class UserHomeServlet extends HttpServlet {
     long userID = (long) request.getSession(false).getAttribute("userID");
     Database.createDocument(name, language, docHash, userID);
     String folderID = request.getParameter("folderID");
-    if (folderID != null && folderID.length > 0) {
+    if (folderID != null && folderID.length() > 0) {
       Database.addDocumentToFolder(docHash, Long.parseLong(folderID));
     }
     response.sendRedirect("/Document?documentHash=" + docHash);
