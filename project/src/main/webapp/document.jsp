@@ -70,6 +70,10 @@
       a {
         margin-top: -10px;
       }
+
+      .comment {
+        background-color: red;
+      }
     </style>
   </head>
 
@@ -202,6 +206,12 @@
         a.href = window.URL.createObjectURL(blob);
         a.download = '<%= document.getName() %>' + "." + extDict["<%= document.getLanguage() %>"];
         a.click();
+      }
+
+      //Create comment link
+      function createComment() {
+        //firepad.setHtml("<a class=\'comment\' href=\'google.com\'>" + firepad.getHtml() + "</a>");
+        codeMirror.markText({line:0,ch:0},{line:0,ch:2}, {className: "comment"});
       }
     </script>
   </body>
