@@ -43,7 +43,6 @@ export class DocsComponent extends LitElement {
         this.documents = JSON.parse(JSON.stringify(documentsData.documents));
       }
     });
-    this.finishedGetRequest = true;
   }
 
   // Open document in new tab, else if operation is blocked load the doc in the same tab
@@ -64,7 +63,9 @@ export class DocsComponent extends LitElement {
 
   render() {
     const empty = this.documents.length == 0;
-    return html`        
+    this.getServletData();
+    if (this.finishedGetRequest) {
+      return html`        
       <div>
         <div class="user-info">
           <b>${this.nickname}</b>
@@ -75,7 +76,7 @@ export class DocsComponent extends LitElement {
         </div>
         <div class="docs-component">
           <div class="title">${this.title}</div>
-          ${ empty && this.finishedGetRequest ? 
+          ${empty ? 
             html`
               <img class="float-right" src="../assets/empty-docs.png" />
             `
@@ -83,7 +84,7 @@ export class DocsComponent extends LitElement {
             html`
               <ul class="docs-list">
                 ${this.documents.map((doc) => html`
-                    <li @click="${() => this.createMoveFolderEvent(doc.name, doc.hash)}">
+                    <li>
                       <div>
                         <a @click=${() => this.loadDocument(doc.hash)}>
                           ${doc.name}
@@ -91,6 +92,11 @@ export class DocsComponent extends LitElement {
                         <span class="tag tag-bordered">
                           ${doc.language}
                         </span>
+                      </div>
+                      <div>
+                        <button class="plain-btn" @click="${() => this.createMoveFolderEvent(doc.name, doc.hash)}">
+                          <img src="../assets/move-folder.png" />
+                        </button>
                       </div>
                     </li>
                 `)}
@@ -100,6 +106,7 @@ export class DocsComponent extends LitElement {
         </div>
       </div>
     `;
+    }
   }
 }
 customElements.define('docs-component', DocsComponent);
