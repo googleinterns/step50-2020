@@ -34,6 +34,7 @@ export class DocsComponent extends LitElement {
   }
 
   getDocuments() {
+    this.finishedGetRequest = false;
     fetch(this.servlet).then((response) => response.json()).then((documentsData) => {
       this.nickname = documentsData.nickname;
       this.email = documentsData.email;
@@ -42,6 +43,7 @@ export class DocsComponent extends LitElement {
       } catch(err) {
         this.documents = JSON.parse(JSON.stringify(documentsData.documents));
       }
+      this.finishedGetRequest = true;
     });
   }
 
@@ -63,7 +65,6 @@ export class DocsComponent extends LitElement {
 
   render() {
     const empty = this.documents.length == 0;
-    this.getServletData();
     if (this.finishedGetRequest) {
       return html`        
       <div>
