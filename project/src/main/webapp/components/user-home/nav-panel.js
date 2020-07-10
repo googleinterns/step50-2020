@@ -63,23 +63,18 @@ export class NavPanel extends LitElement {
   setPanelValue(e) {
     this.value = e.target.value;
     this.valueID = e.target.valueID;
-    this.createToggleFolderEvent();
+    this.createEvent('toggle-folder');
   }
 
   setPanelValueAsMyDocs() {
     this.value = '';
     this.valueID = this.defaultFolderID;
-    this.createToggleFolderEvent();
+    this.createEvent('toggle-folder');
   }
 
-  createToggleFolderEvent() {
-    let toggleFolderEvent = new CustomEvent('toggle-folder');
-    this.dispatchEvent(toggleFolderEvent);
-  }
-
-  createNewFolderEvent() {
-    let newFolderEvent = new CustomEvent('new-folder');
-    this.dispatchEvent(newFolderEvent);
+  createEvent(eventName) {
+    let event = new CustomEvent(eventName);
+    this.dispatchEvent(event);
   }
 
   render() {
@@ -122,7 +117,7 @@ export class NavPanel extends LitElement {
               label="Folders"
               styling="full-width">
             </panel-element>
-            <button class="plain-btn" @click="${this.createNewFolderEvent}">
+            <button class="plain-btn" @click=${() => this.createEvent('new-folder')}>
               <img src="../assets/new-folder.png" />
             </button>
           </div>
