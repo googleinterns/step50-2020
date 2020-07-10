@@ -47,10 +47,13 @@ public class UserHomeServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String name = request.getParameter("title");
     String language = request.getParameter("language");
-    String documentID = request.getParameter("documentID");
+    String docHash = request.getParameter("docHash");
     long userID = (long) request.getSession(false).getAttribute("userID");
-    // check if null, then redirect
-    Database.createDocument(name, language, documentID, userID);
-    response.sendRedirect("/Document?documentHash=" + documentID);
+    Database.createDocument(name, language, docHash, userID);
+    String folderID = request.getParameter("folderID");
+    if (folderID != null && folderID.length > 0) {
+      Database.addDocumentToFolder(docHash, Long.parseLong(folderID));
+    }
+    response.sendRedirect("/Document?documentHash=" + docHash);
   }
 }
