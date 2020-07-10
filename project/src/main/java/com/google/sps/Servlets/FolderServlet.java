@@ -17,8 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 
 /*
   Called by the user-home.html page.
-  // pass the folder hash
-  // get a list of folders from the backend
+  GET request returns folder's documents if folderID is provided, 
+  else returns list of folders.
+  POST request creates folder.
 */
 @WebServlet("/Folder")
 public class FolderServlet extends HttpServlet {
@@ -26,28 +27,24 @@ public class FolderServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String url = request.getRequestURL().toString();
     String folderIDString = (String) request.getParameter("folderID");
-    boolean getFolderList = folderIDString == null || folderIDString.length() == 0;
     long userID = (long) request.getSession(false).getAttribute("userID");
-    if (getFolderList) {
+    if (folderIDString == null || folderIDString.length() == 0) {
       ArrayList<Folder> folders = Database.getUsersFolders(userID);
       HashMap<String, Object> foldersData = new HashMap<String, Object>();
       foldersData.put("defaultFolderID", Folder.DEFAULT_FOLDER_ID);
       foldersData.put("folders", folders);
-      String foldersDataJSON = convertToJson(foldersData);
       response.setContentType("application/json;");
-      response.getWriter().println(foldersDataJSON);
+      response.getWriter().println(convertToJson(foldersData));
     } else {
       long folderID = Long.parseLong(folderIDString);
       User user = Database.getUserByID(userID);
-      Folder folder = Database.getFolderByID(folderID);
       String documentsJSON = convertToJson(Database.getFoldersDocuments(folderID));
       HashMap<String, String> documentsData = new HashMap<String, String>();
       documentsData.put("nickname", user.getNickname());
       documentsData.put("email", user.getEmail());
       documentsData.put("documents", documentsJSON);
-      String documentsDataJSON = convertToJson(documentsData);
       response.setContentType("application/json;");
-      response.getWriter().println(documentsDataJSON);
+      response.getWriter().println(convertToJson(documentsData));
     }
   }
 
