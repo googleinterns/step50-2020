@@ -222,7 +222,7 @@
       }
 
       //get firepad html
-      func getFirepadHTML() {
+      function getFirepadHTML() {
         console.log(firepad.getHtml());
       }
     </script>
