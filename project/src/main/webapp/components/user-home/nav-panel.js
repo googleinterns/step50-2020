@@ -6,7 +6,7 @@ export class NavPanel extends LitElement {
   static get properties() {
     return {
       languages: {type: Array},
-      documentID: {type: String},
+      docHash: {type: String},
       formDisabled: {type: String},
       validTitle: {type: Boolean},
       validDropdown: {type: Boolean},
@@ -20,7 +20,7 @@ export class NavPanel extends LitElement {
   constructor() {
     super();
     this.languages = ['C++', 'Go', 'Python', 'Java', 'Javascript'];
-    this.documentID = '';
+    this.docHash = '';
     this.placeholder = 'Write a document title...';
     this.formDisabled = '';
     this.validTitle = false;
@@ -41,10 +41,10 @@ export class NavPanel extends LitElement {
     if (firebase.apps.length === 0) {
       firebase.initializeApp(config);
     }
-    this.documentID = this.createDocumentID();
+    this.docHash= this.createDocHash();
   }
 
-  createDocumentID() {
+  createDocHash() {
     var ref = firebase.database().ref();
     ref = ref.push();  // generate unique location.
     return ref.key;
@@ -86,7 +86,7 @@ export class NavPanel extends LitElement {
     const disableSubmit = this.validTitle && this.validDropdown ? false: true;
     return html`
       <div>
-        <form class="new-doc-group" id="new-doc-form" action="/UserHome" method="POST" onsubmit=${
+        <form class="new-doc-group" id="new-doc-form" action=${'/UserHome?formID=' + this.valueID} method="POST" onsubmit=${
         this.createDocument()}>
           <input 
             @change=${(e) => this.validateTitle(e)} 
@@ -103,7 +103,7 @@ export class NavPanel extends LitElement {
             styling="full-width"
           >
           </dropdown-element>
-          <input type="hidden" name="documentID" value=${this.documentID}>
+          <input type="hidden" name="docHash" value=${this.docHash}>
           ${ disableSubmit ? 
             html`
               <button id="new-doc-submit" class="primary-blue-btn full-width disabled" disabled> + New doc</button>
