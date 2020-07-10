@@ -1,4 +1,16 @@
-.input:focus
+input
+  @extend .white-input
+
+// Make placeholder disappear on focus
+input:focus::-webkit-input-placeholder
+  color: transparent
+input:focus:-moz-placeholder
+  color:transparent
+input:focus::-moz-placeholder
+  color:transparent
+input:focus:-ms-input-placeholder
+  color:transparent
+input:focus
   outline: none !important
 
 .white-input
