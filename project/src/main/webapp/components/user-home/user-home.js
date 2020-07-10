@@ -9,6 +9,13 @@ export class UserHome extends LitElement {
       validForm: {type: Boolean},
       defaultFolderID: {type: Number},
       folders: {type: Array},
+      folders: {type: Array},
+      showFolder: {type: String},
+      showFolderID: {type: Number},
+      moveDoc: {type: String},
+      moveDocHash: {type: String},
+      moveFolder: {type: String},
+      moveFolderID: {type: Number},
     };
   }
 
@@ -17,8 +24,12 @@ export class UserHome extends LitElement {
     this.validForm = false;
     this.defaultFolderID = -1;
     this.folders = [];
-    this.folder = '';
-    this.folderID = -1;
+    this.showFolder = '';
+    this.showFolderID = -1;
+    this.moveDoc = '';
+    this.moveDocHash = '';
+    this.moveFolder = '';
+    this.moveFolderID = -1;
   }
 
   firstUpdated() {
@@ -38,22 +49,22 @@ export class UserHome extends LitElement {
   }
 
   changeDocsComponent(e) {
-    this.folder = e.target.value;
-    this.folderID = e.target.valueID;
+    this.showFolder = e.target.value;
+    this.showFolderID = e.target.valueID;
     this.requestUpdate(); 
   }
 
-  showModal() {
-    let modal = document.getElementById("new-folder-modal");
+  showModal(id) {
+    let modal = document.getElementById(id);
     modal.className = "modal is-active";
   }
 
-  hideModal() {
-    let modal = document.getElementById("new-folder-modal");
+  hideModal(id) {
+    let modal = document.getElementById(id);
     modal.className = "modal";
   }
   
-  createFolder(e) {
+  createFolderRequest(e) {
     const form = e.target;
     const input = form.querySelector('#name');
     const name = input.value;
@@ -61,7 +72,7 @@ export class UserHome extends LitElement {
     xhttp.open("POST", "/Folder", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("folderName=" + name);
-    this.hideModal();
+    this.hideModal("new-folder-modal");
   }
 
   validateForm(e) {
@@ -69,18 +80,40 @@ export class UserHome extends LitElement {
     this.validForm = input.value.length > 0;
   }
 
+  setMoveDoc(e) {
+    const detail = e.detail;
+    this.moveDoc = detail.name;
+    this.moveDocHash = detail.hash;
+    this.showModal("move-folder-modal");
+  }
+
+  setMoveFolder(folderName, folderID) {
+    this.moveFolder = folderName;
+    this.moveFolderID = folderID;
+    console.log(this.moveFolder);
+    console.log(this.moveFolderID);
+  }
+
+  moveFolderRequest() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/MoveDocument", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("docHash=" + this.moveDocHash + "&folderID=" + this.moveFolderID);
+    this.hideModal("move-folder-modal");
+  }
+
   render() {
-    return html`  
+    return html`
       <div class="columns full-width full-height">
         <div class="modal" id="new-folder-modal">
           <div class="modal-background"></div>
           <div class="modal-card">
             <header class="modal-card-head">
               <p class="modal-card-title">New Folder</p>
-              <button class="delete" aria-label="close" @click="${this.hideModal}" />
+              <button class="delete" aria-label="close" @click="${() => this.hideModal("new-folder-modal")}" />
             </header>
             <section class="modal-card-body">
-              <form id="new-folder-form" @submit="${(e) => this.createFolder(e)}">
+              <form id="new-folder-form" @submit="${(e) => this.createFolderRequest(e)}">
                 <input @change=${(e) => this.validateForm(e)}  id="name" type="name" placeholder="Write a new folder name..."/> 
                 ${this.validForm ? 
                   html`
@@ -94,26 +127,59 @@ export class UserHome extends LitElement {
             </section>
           </div>
         </div>
+        <div class="modal" id="move-folder-modal">
+          <div class="modal-background"></div>
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <p class="modal-card-title">Move ${this.moveDoc}</p>
+              <button class="delete" aria-label="close" @click="${() => this.hideModal("move-folder-modal")}" />
+            </header>
+            <section class="modal-card-body">
+              <form id="new-folder-form" @submit="${this.moveFolderRequest}">
+                <p>Select a folder from this list, and your document will 
+                appear when you navigate to that folder.</p>
+                <div class="move-folder-list">
+                  ${this.folders.map((folder) => html`
+                      <a href="#" 
+                        class="dropdown-item"
+                        @click=${() => this.setMoveFolder(folder.name, folder.folderID)}
+                      > 
+                        ${folder.name} 
+                      </a>
+                    `)}
+                </div>
+                <div>
+                  <input class="white-input" value=${this.moveFolder} id="move-folder-name" readonly="readonly" />
+                  <input type="submit" class="primary-blue-btn">
+                </div>
+              </form>
+            </section>
+          </div>
+        </div>
         <div class="column is-one-quarter nav-panel">
           <nav-panel
             @toggle-folder=${(e) => this.changeDocsComponent(e)}
-            @new-folder="${this.showModal}"
+            @new-folder="${() => this.showModal("new-folder-modal")}"
             .folders=${this.folders}
             defaultFolderID=${this.defaultFolderID}
           >
           </nav-panel>
         </div>
         <div class="column is-three-quarters">
-          ${(this.folderID !== this.defaultFolderID && this.folder.length > 0) ?
+          ${(this.showFolderID !== this.defaultFolderID && this.showFolder.length > 0) ?
             html`
               <folder-component
-                title=${this.folder}
-                servlet=${'/Folder?folderID=' + this.folderID}
+                @move-folder=${(e) => this.moveFolderModal(e)}
+                title=${this.showFolder}
+                servlet=${'/Folder?folderID=' + this.showFolderID}
               >
               </folder-component>
             ` :
             html`
-              <my-docs-component></my-docs-component>
+              <my-docs-component
+                @move-folder=${(e) => this.setMoveDoc(e)}
+              >
+              </my-docs-component>
             `
           }
         </div>

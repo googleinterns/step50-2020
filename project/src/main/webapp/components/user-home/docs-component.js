@@ -52,10 +52,14 @@ export class DocsComponent extends LitElement {
     window.open(docLink) || window.location.replace(docLink);
   }
 
-  // Open document in new tab, else if operation is blocked load the doc in the same tab
-  loadDocument(hash) {
-    const docLink = "/Document?documentHash=" + hash;
-    window.open(docLink, '_blank') || window.location.replace(docLink);
+  createMoveFolderEvent(docName, docHash) {
+    let moveFolderEvent = new CustomEvent('move-folder', {
+      detail: {
+        name: docName,
+        hash: docHash,
+      }
+    });
+    this.dispatchEvent(moveFolderEvent);
   }
 
   render() {
@@ -79,7 +83,7 @@ export class DocsComponent extends LitElement {
             html`
               <ul class="docs-list">
                 ${this.documents.map((doc) => html`
-                    <li>
+                    <li @click="${() => this.createMoveFolderEvent(doc.name, doc.hash)}">
                       <div>
                         <a @click=${() => this.loadDocument(doc.hash)}>
                           ${doc.name}
