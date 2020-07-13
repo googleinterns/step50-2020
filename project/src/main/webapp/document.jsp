@@ -98,8 +98,16 @@
 
       .close {
         position: absolute;
+<<<<<<< HEAD
         top: 25px;
         right: 11px;
+=======
+        top: 0;
+        right: 14px;
+        font-size: 42px;
+        transform: rotate(45deg);
+        cursor: pointer;
+>>>>>>> Create frontend of versioning
       }
 
       .versionHeader {
@@ -114,13 +122,18 @@
 
       .commitMessage {
         position : absolute;
+<<<<<<< HEAD
         right: 4px;
+=======
+        right: 37px;
+>>>>>>> Create frontend of versioning
         top: 550px;
       }
 
       .commitButton {
         position : absolute;
         top: 600px;
+<<<<<<< HEAD
         right : 4px;
       }
 
@@ -132,6 +145,9 @@
         right : 76px;
         top : 23px;
         position : absolute;
+=======
+        right : 114px;
+>>>>>>> Create frontend of versioning
       }
     </style>
   </head>
@@ -177,22 +193,15 @@
       </div>
     </div>
     <div class="versioning" id="versioning-block">
-      <div class="close">
-        <button class="delete" onclick="closeVersioning()"></button>
-      </div>
+      <div class="close" onclick="closeVersioning()">+</div>
       <div class="versionHeader">
-        <div class="revisions">
-          <button class="text-btn" id="revisions-button"> Revisions </button>
-        </div>
-        <div class="commits">
-          <button class="text-btn" id="commits-button"> Commits </button>
-        </div>
+        <p>Revisions</p>
       </div>
-      <div class="commitButton three-width">
-        <button class="primary-blue-btn three-width" id="commit-button"> Commit </button>
+      <div class="commitButton">
+        <button class="primary-blue-btn full-width" id="commit-button"> Commit </button>
       </div>
-      <div class="commitMessage three-width">
-        <input class="white-input three-width" placeholder="Type a commit message..." id="commit-msg"></input>
+      <div class="commitMessage">
+        <input class="white-input full-width" placeholder="Type a commit message..." id="commit-msg"></input>
       </div>
     </div>
     <div id="firepad-container"></div>
