@@ -212,6 +212,14 @@
 
       //Create comment
       function comment() {
+          var formattedDate = new Intl.DateTimeFormat('en-US', {
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric'
+          }).format(new Date());
+        console.log("<%= user.getNickname() %>, " + formattedDate);
+
         var startPos = codeMirror.getCursor(true);
         var endPos = codeMirror.getCursor(false);
         codeMirror.markText({line:startPos.line, ch:startPos.ch}, {line:endPos.line, ch:endPos.ch}, {className: "comment"});
@@ -219,7 +227,7 @@
 
       //On comment click
       $(document).on('click','.comment',function() {
-        console.log("test");
+        console.log("comment clicked");
       });
     </script>
   </body>
