@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/javascript/javascript.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/ayu-dark.css" />
@@ -62,7 +63,7 @@
         float: right;
         display: flex;
         justify-content: space-between;
-        width: 215px;
+        width: 290px;
         margin-right: 25px;
         margin-top: 5px
       }
@@ -72,7 +73,7 @@
       }
 
       .comment {
-        background-color: red;
+        background-color: yellow;
       }
     </style>
   </head>
@@ -89,6 +90,7 @@
           response.sendRedirect("/");  
         } %>
       <div class="btn-group">
+        <button class="white-btn" onclick="comment()"> Comment </button>
         <button class="white-btn" onclick="showModal()"> Share </button>
         <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
         <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
@@ -208,11 +210,17 @@
         a.click();
       }
 
-      //Create comment link
-      function createComment() {
-        //firepad.setHtml("<a class=\'comment\' href=\'google.com\'>" + firepad.getHtml() + "</a>");
-        codeMirror.markText({line:0,ch:0},{line:0,ch:2}, {className: "comment"});
+      //Create comment
+      function comment() {
+        var startPos = codeMirror.getCursor(true);
+        var endPos = codeMirror.getCursor(false);
+        codeMirror.markText({line:startPos.line, ch:startPos.ch}, {line:endPos.line, ch:endPos.ch}, {className: "comment"});
       }
+
+      //On comment click
+      $(document).on('click','.comment',function() {
+        console.log("test");
+      });
     </script>
   </body>
 </html>
