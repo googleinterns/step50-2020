@@ -22,6 +22,7 @@
     <script type="module" src="./components/toolbar-component.js"></script>
     <script type="module" src="./components/share-component.js"></script>
     <script src="script.js"></script>
+    <script src="firepad.js"></script>
     <style>
       html {
         height: 100%;
@@ -90,6 +91,7 @@
         <% } else {
           response.sendRedirect("/");  
         } %>
+      <button onclick="createSnapshot('AG')">Firebase</button>
     </div>
     <div class="share" id="share_btn">
       <button class="white-btn" onclick="showModal()"> Share </button>
@@ -225,6 +227,50 @@
         a.download = '<%= document.getName() %>' + "." + extDict["<%= document.getLanguage() %>"];
         a.click();
       }
+
+      var revisionsCache = new Map();
+      function createSnapshot(revisionHash) {
+        firebaseAdapter = firepad.firebaseAdapter_;
+        var document = new Firepad.TextOperation();
+        const firepadRef = getRef();
+        const end = revisionFromId(revisionHash);
+        for (i = 0; i <= end; i++) {
+          const currHash = revisionToId(i);
+          firepadRef.child('history').child(currHash).once('value').then(function(snapshot) {
+            const revisionData = snapshot.val();
+            const revision = Firepad.TextOperation.fromJSON(revisionData.o);
+            document = document.compose(revision);
+            if (i == end + 1) {
+              console.log(document.toJSON());
+              return document.toJSON();
+            }
+          });
+        }
+      }
+ 
+      function saveCheckpoint(revisionHash, callback) {
+        console.log(firepad);
+        firebaseAdapter = firepad.firebaseAdapter_;
+        // put the prev checkpoint, to this checkpoint
+        firebaseAdapter.saveCheckpoint_ = function() {
+          firebaseAdapter.ref_.child('checkpoint').child(revisionHash).update({
+            a: firebaseAdapter.userId_,
+            o: firebaseAdapter.document_.toJSON()
+          });
+        };
+        firebaseAdapter.saveCheckpoint_();
+        //removeFromHistory(revisionHash);
+      }
+ 
+      function removeFromHistory(revisionHash) {
+        const firepadRef = getRef();
+        const historyRef = firepadRef.child('history');
+        const removeRevisions = historyRef.orderByKey().endAt(revisionHash).limitToLast(1);
+        const listener = removeRevisions.on('child_added', function(snapshot) {
+          snapshot.ref.remove();
+        });
+      }
+
     </script>
   </body>
 </html>
