@@ -25,27 +25,13 @@ import javax.servlet.http.HttpServletResponse;
 public class FolderServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String url = request.getRequestURL().toString();
-    String folderIDString = (String) request.getParameter("folderID");
     long userID = (long) request.getSession(false).getAttribute("userID");
-    if (folderIDString == null || folderIDString.length() == 0) {
-      ArrayList<Folder> folders = Database.getUsersFolders(userID);
-      HashMap<String, Object> foldersData = new HashMap<String, Object>();
-      foldersData.put("defaultFolderID", Folder.DEFAULT_FOLDER_ID);
-      foldersData.put("folders", folders);
-      response.setContentType("application/json;");
-      response.getWriter().println(convertToJson(foldersData));
-    } else {
-      long folderID = Long.parseLong(folderIDString);
-      User user = Database.getUserByID(userID);
-      String documentsJSON = convertToJson(Database.getFoldersDocuments(folderID));
-      HashMap<String, String> documentsData = new HashMap<String, String>();
-      documentsData.put("nickname", user.getNickname());
-      documentsData.put("email", user.getEmail());
-      documentsData.put("documents", documentsJSON);
-      response.setContentType("application/json;");
-      response.getWriter().println(convertToJson(documentsData));
-    }
+    ArrayList<Folder> folders = Database.getUsersFolders(userID);
+    HashMap<String, Object> foldersData = new HashMap<String, Object>();
+    foldersData.put("defaultFolderID", Folder.DEFAULT_FOLDER_ID);
+    foldersData.put("folders", folders);
+    response.setContentType("application/json;");
+    response.getWriter().println(convertToJson(foldersData));
   }
 
   // Accepts any Java Object, where each {key: value}

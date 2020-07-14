@@ -5,6 +5,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.*;
 import com.google.sps.models.Database;
 import com.google.sps.models.User;
+import com.google.sps.models.Folder;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -30,9 +31,8 @@ public class UserHomeServlet extends HttpServlet {
     documentsData.put("nickname", user.getNickname());
     documentsData.put("email", user.getEmail());
     documentsData.put("documents", Database.getUsersDocuments(userID));
-    String documentsDataJSON = convertToJson(documentsData);
     response.setContentType("application/json;");
-    response.getWriter().println(documentsDataJSON);
+    response.getWriter().println(convertToJson(documentsData));
   }
 
   // Accepts any Java Object, where each {key: value}

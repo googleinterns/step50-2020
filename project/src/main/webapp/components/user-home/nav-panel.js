@@ -12,8 +12,8 @@ export class NavPanel extends LitElement {
       validDropdown: {type: Boolean},
       value: {type: String},
       valueID: {type: Number},
-      defaultFolderID: {type: Number},
       folders: {type: Array},
+      defaultFolderID: {type: Number},
     };
   }
 
@@ -67,7 +67,7 @@ export class NavPanel extends LitElement {
   }
 
   setPanelValueAsMyDocs() {
-    this.value = '';
+    this.value = 'My Code Docs';
     this.valueID = this.defaultFolderID;
     this.createEvent('toggle-folder');
   }
@@ -110,7 +110,7 @@ export class NavPanel extends LitElement {
           }
         </form>
         <div class="nav-btn-group">
-          <button class="text-btn full-width" @click="${this.setPanelValueAsMyDocs}"> My code docs </button>
+          <button class="text-btn full-width" @click="${this.setPanelValueAsMyDocs}"> My Code Docs </button>
           <div class="folder-btn-group">
             <panel-element 
               @change=${(e) => this.setPanelValue(e)}

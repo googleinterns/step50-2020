@@ -7,39 +7,59 @@ export class UserHome extends LitElement {
   static get properties() {
     return {
       validForm: {type: Boolean},
-      defaultFolderID: {type: Number},
       folders: {type: Array},
-      folders: {type: Array},
+      documents: {type: Array},
       showFolder: {type: String},
       showFolderID: {type: Number},
       moveDoc: {type: String},
       moveDocHash: {type: String},
       moveFolder: {type: String},
       moveFolderID: {type: Number},
+      nickname: {type: String},
+      email: {type: String},
+      finishedGetDocuments: {type: Boolean},
+      defaultFolderID: {type: Number},
     };
   }
 
   constructor() {
     super();
     this.validForm = false;
-    this.defaultFolderID = -1;
     this.folders = [];
-    this.showFolder = '';
-    this.showFolderID = -1;
+    this.documents = [];
+    this.showFolder = 'My Code Docs';
     this.moveDoc = '';
     this.moveDocHash = '';
     this.moveFolder = '';
-    this.moveFolderID = -1;
+    this.nickname = '';
+    this.email = '';
+    this.finishedGetDocuments = false;
+    this.defaultFolderID = -1;
   }
 
   firstUpdated() {
     this.getFolders();
+    this.getDocuments();
   }
 
   getFolders() {
     fetch('/Folder').then((response) => response.json()).then((foldersData) => {
       this.defaultFolderID = foldersData.defaultFolderID;
       this.folders = JSON.parse(JSON.stringify(foldersData.folders));
+    });
+  }
+
+  getDocuments() {
+    this.finishedGetDocuments = false;
+    fetch('/UserHome').then((response) => response.json()).then((documentsData) => {
+      this.nickname = documentsData.nickname;
+      this.email = documentsData.email;
+      try {
+        this.documents = JSON.parse(documentsData.documents);
+      } catch(err) {
+        this.documents = JSON.parse(JSON.stringify(documentsData.documents));
+      }
+      this.finishedGetDocuments = true;
     });
   }
 
@@ -90,8 +110,6 @@ export class UserHome extends LitElement {
   setMoveFolder(folderName, folderID) {
     this.moveFolder = folderName;
     this.moveFolderID = folderID;
-    console.log(this.moveFolder);
-    console.log(this.moveFolderID);
   }
 
   moveFolderRequest() {
@@ -100,6 +118,7 @@ export class UserHome extends LitElement {
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("docHash=" + this.moveDocHash + "&folderID=" + this.moveFolderID);
     this.hideModal("move-folder-modal");
+    this.getDocuments();
   }
 
   render() {
@@ -166,21 +185,16 @@ export class UserHome extends LitElement {
           </nav-panel>
         </div>
         <div class="column is-three-quarters">
-          ${(this.showFolderID !== this.defaultFolderID && this.showFolder.length > 0) ?
-            html`
-              <folder-component
-                @move-folder=${(e) => this.moveFolderModal(e)}
-                title=${this.showFolder}
-                servlet=${'/Folder?folderID=' + this.showFolderID}
-              >
-              </folder-component>
-            ` :
-            html`
-              <my-docs-component
-                @move-folder=${(e) => this.setMoveDoc(e)}
-              >
-              </my-docs-component>
-            `
+          <docs-component
+            @move-folder=${(e) => this.setMoveDoc(e)}
+            .documents="${this.documents}"
+            nickname=${this.nickname}
+            email=${this.email}
+            title=${this.showFolder}
+            folderID=${this.showFolderID ? this.showFolderID : this.defaultFolderID}
+            finishedGetDocuments=${this.finishedGetDocuments}
+          >
+          </folder-component>
           }
         </div>
       </div>      

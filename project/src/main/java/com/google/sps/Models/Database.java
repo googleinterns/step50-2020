@@ -303,13 +303,15 @@ public class Database {
     if (oldFolderID != Folder.DEFAULT_FOLDER_ID) {
       removeDocumentFromFolder(docHash, oldFolderID);
     }
-    Query query = new Query("Folder").addFilter(
+    if (folderID != Folder.DEFAULT_FOLDER_ID) {
+      Query query = new Query("Folder").addFilter(
         "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
-    Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
-    ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
-    docHashes.add(docHash);
-    folderEntity.setProperty("docHashes", docHashes);
-    getDatastore().put(folderEntity);
+      Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
+      ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
+      docHashes.add(docHash);
+      folderEntity.setProperty("docHashes", docHashes);
+      getDatastore().put(folderEntity);
+    }
   }
 
   private static void removeDocumentFromFolder(String docHash, long folderID) {
