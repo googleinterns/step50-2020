@@ -51,9 +51,16 @@ public class UserHomeServlet extends HttpServlet {
     long userID = (long) request.getSession(false).getAttribute("userID");
     Database.createDocument(name, language, docHash, userID);
     String folderID = request.getParameter("folderID");
-    if (folderID != null && folderID.length() > 0) {
+    if (validFolderID(folderID)) {
       Database.addDocumentToFolder(docHash, Long.parseLong(folderID));
     }
     response.sendRedirect("/Document?documentHash=" + docHash);
+  }
+
+  private boolean validFolderID(String folderID) {
+    return folderID != null 
+      && !folderID.equals("undefined") 
+      && folderID.length() > 0
+      && Long.parseLong(folderID) != Folder.DEFAULT_FOLDER_ID;
   }
 }

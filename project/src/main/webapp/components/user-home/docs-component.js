@@ -14,6 +14,7 @@ export class DocsComponent extends LitElement {
 
   constructor() {
     super();
+    this.finishedGetDocuments = false;
   }
 
   // Remove shadow DOM so styles are inherited

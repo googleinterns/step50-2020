@@ -121,60 +121,74 @@ export class UserHome extends LitElement {
     this.getDocuments();
   }
 
+  createFolderModal() {
+    return html`
+    <div class="modal" id="new-folder-modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">New Folder</p>
+          <button class="delete" aria-label="close" @click="${() => this.hideModal("new-folder-modal")}" />
+        </header>
+        <section class="modal-card-body">
+          <form id="new-folder-form" @submit="${(e) => this.createFolderRequest(e)}">
+            <input @change=${(e) => this.validateForm(e)}  id="name" type="name" placeholder="Write a new folder name..."/> 
+            ${this.validForm ? 
+              html`
+                <input type="submit" value="Create" class="primary-blue-btn">
+              ` :
+              html`
+                <input type="submit" value="Create" class="primary-blue-btn disabled" disabled>
+              `
+            }
+          </form>
+        </section>
+      </div>
+    </div>
+    `
+  }
+
+  moveFolderModal() {
+    const initialOptions = [{name: "My Code Docs", folderID: this.defaultFolderID}];
+    const folderOptions = initialOptions.concat(this.folders);
+    return html`
+      <div class="modal" id="move-folder-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title">Move ${this.moveDoc}</p>
+            <button class="delete" aria-label="close" @click="${() => this.hideModal("move-folder-modal")}" />
+          </header>
+          <section class="modal-card-body">
+            <form id="new-folder-form" @submit="${this.moveFolderRequest}">
+              <p>Select a folder from this list, and your document will 
+              appear when you navigate to that folder.</p>
+              <div class="move-folder-list">
+                ${folderOptions.map((folder) => html`
+                    <a href="#" 
+                      class="dropdown-item"
+                      @click=${() => this.setMoveFolder(folder.name, folder.folderID)}
+                    > 
+                      ${folder.name} 
+                    </a>
+                  `)}
+              </div>
+              <div>
+                <input class="white-input" value=${this.moveFolder} id="move-folder-name" readonly="readonly" />
+                <input type="submit" class="primary-blue-btn">
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    `
+  }
+
   render() {
     return html`
       <div class="columns full-width full-height">
-        <div class="modal" id="new-folder-modal">
-          <div class="modal-background"></div>
-          <div class="modal-card">
-            <header class="modal-card-head">
-              <p class="modal-card-title">New Folder</p>
-              <button class="delete" aria-label="close" @click="${() => this.hideModal("new-folder-modal")}" />
-            </header>
-            <section class="modal-card-body">
-              <form id="new-folder-form" @submit="${(e) => this.createFolderRequest(e)}">
-                <input @change=${(e) => this.validateForm(e)}  id="name" type="name" placeholder="Write a new folder name..."/> 
-                ${this.validForm ? 
-                  html`
-                    <input type="submit" value="Create" class="primary-blue-btn">
-                  ` :
-                  html`
-                    <input type="submit" value="Create" class="primary-blue-btn disabled" disabled>
-                  `
-                }
-              </form>
-            </section>
-          </div>
-        </div>
-        <div class="modal" id="move-folder-modal">
-          <div class="modal-background"></div>
-          <div class="modal-card">
-            <header class="modal-card-head">
-              <p class="modal-card-title">Move ${this.moveDoc}</p>
-              <button class="delete" aria-label="close" @click="${() => this.hideModal("move-folder-modal")}" />
-            </header>
-            <section class="modal-card-body">
-              <form id="new-folder-form" @submit="${this.moveFolderRequest}">
-                <p>Select a folder from this list, and your document will 
-                appear when you navigate to that folder.</p>
-                <div class="move-folder-list">
-                  ${this.folders.map((folder) => html`
-                      <a href="#" 
-                        class="dropdown-item"
-                        @click=${() => this.setMoveFolder(folder.name, folder.folderID)}
-                      > 
-                        ${folder.name} 
-                      </a>
-                    `)}
-                </div>
-                <div>
-                  <input class="white-input" value=${this.moveFolder} id="move-folder-name" readonly="readonly" />
-                  <input type="submit" class="primary-blue-btn">
-                </div>
-              </form>
-            </section>
-          </div>
-        </div>
+        ${this.createFolderModal()}
+        ${this.moveFolderModal()}
         <div class="column is-one-quarter nav-panel">
           <nav-panel
             @toggle-folder=${(e) => this.changeDocsComponent(e)}
