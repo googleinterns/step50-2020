@@ -7,6 +7,8 @@ export class DocsComponent extends LitElement {
       nickname: {type: String},
       email: {type: String},
       finishedGetRequest: {type: Boolean},
+      title: {type: String},
+      servlet: {type: String},
     };
   }
 
@@ -15,7 +17,9 @@ export class DocsComponent extends LitElement {
     this.documents = [];
     this.nickname = '';
     this.email = '';
-    this.finishedGetRequest = false; 
+    this.finishedGetRequest = false;
+    this.title = ''; 
+    this.servlet = ''; 
   }
 
   // Remove shadow DOM so styles are inherited
@@ -23,11 +27,21 @@ export class DocsComponent extends LitElement {
     return this;
   }
 
-  getServletData() {
-    fetch('/UserHome').then((response) => response.json()).then((documentsData) => { 
-      this.documents = JSON.parse(documentsData.documents);
+  updated(changedProperties) {
+    if (changedProperties.servlet != this.servlet) {
+      this.getDocuments();
+    }
+  }
+
+  getDocuments() {
+    fetch(this.servlet).then((response) => response.json()).then((documentsData) => {
       this.nickname = documentsData.nickname;
       this.email = documentsData.email;
+      try {
+        this.documents = JSON.parse(documentsData.documents);
+      } catch(err) {
+        this.documents = JSON.parse(JSON.stringify(documentsData.documents));
+      }
     });
     this.finishedGetRequest = true;
   }
@@ -38,6 +52,12 @@ export class DocsComponent extends LitElement {
     window.open(docLink) || window.location.replace(docLink);
   }
 
+  // Open document in new tab, else if operation is blocked load the doc in the same tab
+  loadDocument(hash) {
+    const docLink = "/Document?documentHash=" + hash;
+    window.open(docLink, '_blank') || window.location.replace(docLink);
+  }
+
   render() {
     const empty = this.documents.length == 0;
     return html`        
@@ -46,10 +66,12 @@ export class DocsComponent extends LitElement {
           <b>${this.nickname}</b>
           <br>
           ${this.email}
+          <br>
+          <a href="/_ah/logout?continue=%2FUser"> Sign out </a>
         </div>
         <div class="docs-component">
-          <div class="title">My Code Docs</div>
-          ${empty && this.finishedGetRequest ? 
+          <div class="title">${this.title}</div>
+          ${ empty && this.finishedGetRequest ? 
             html`
               <img class="float-right" src="../assets/empty-docs.png" />
             `
@@ -66,16 +88,11 @@ export class DocsComponent extends LitElement {
                           ${doc.language}
                         </span>
                       </div>
-                      <div class="shared-with-text">
-                        <b> Shared with </b> 
-                        ${doc.userIDs.toString()}
-                      </div>
                     </li>
                 `)}
               <ul>
             `
           }
-          ${this.getServletData()}
         </div>
       </div>
     `;

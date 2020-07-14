@@ -27,7 +27,10 @@ public final class DocumentTest {
   @Test
   public void testGetters() {
     ArrayList<Long> userIDs = new ArrayList<Long>();
-    Document doc = new Document("new_doc", "python", "x6723hbS", userIDs);
+    userIDs.add(100000L);
+    ArrayList<Long> editorIDs = new ArrayList<Long>();
+    ArrayList<Long> viewerIDs = new ArrayList<Long>();
+    Document doc = new Document("new_doc", "python", "x6723hbS", editorIDs, viewerIDs, 100000L, Folder.DEFAULT_FOLDER_ID);
 
     String name = doc.getName();
     Assert.assertEquals("new_doc", name);
@@ -38,14 +41,10 @@ public final class DocumentTest {
     String hash = doc.getHash();
     Assert.assertEquals("x6723hbS", hash);
 
+    long ownerID = doc.getOwnerID();
+    Assert.assertEquals(100000L, ownerID);
+
     ArrayList<Long> testUsers = doc.getUserIDs();
     Assert.assertEquals(userIDs, testUsers);
-
-    ArrayList<Long> userIDs2 = new ArrayList<Long>();
-    userIDs2.add(100000L);
-    Document doc2 = new Document("new_doc", "python", "x6723hbS", userIDs2);
-
-    ArrayList<Long> testUsers2 = doc2.getUserIDs();
-    Assert.assertEquals(userIDs2, testUsers2);
   }
 }

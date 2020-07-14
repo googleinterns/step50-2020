@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="main.css" />
     <script type="module" src="./components/toolbar-component.js"></script>
     <script type="module" src="./components/comment-component.js"></script>
+    <script type="module" src="./components/share-component.js"></script>
     <script src="script.js"></script>
     <style>
       html {
@@ -76,10 +77,16 @@
       .comment {
         background-color: yellow;
       }
+
+      .permissions {
+          position: absolute;
+          right : 60px;
+          top : 84px;
+      }
     </style>
   </head>
 
-  <body onload="init(); getHash()">
+  <body onload="init(); getHash(); restrict()">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -97,6 +104,15 @@
         <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
       </div>
     </div>
+    <div class="share" id="share_btn">
+      <button class="white-btn" onclick="showModal()"> Share </button>
+    </div>
+    <div class="return-home">
+      <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
+    </div>
+    <div class="share">
+      <button class="white-btn" onclick="download()"> Download </a>
+    </div>
     <div class="toolbar">
       <toolbar-component onclick="changeTheme()"></toolbar-component>
     </div>
@@ -111,6 +127,7 @@
           <form id="share-form" onsubmit="return share()">
             <label for="email">Share with email:</label>
             <input type="email" id="email" name="email"> 
+            <share-component></share-component>
             <input type="submit">
             <input type="hidden" id="documentHash" name="documentHash" value="<%= (String)request.getAttribute("documentHash") %>">
             <p style="color: red" id="share-response"></p>
@@ -159,6 +176,15 @@
         //// Get Firebase Database reference.
         var firepadRef = getRef()
         firepad = Firepad.fromCodeMirror(firepadRef, codeMirror)
+      }
+
+      function restrict() {
+        <%if (document.getViewerIDs().contains(user.getUserID())) {
+                %>
+                  document.getElementById("firepad-container").style.pointerEvents = "none";
+                  document.getElementById("share_btn").style.visibility = "hidden";
+                <%
+            }%>
       }
 
       function changeTheme() {

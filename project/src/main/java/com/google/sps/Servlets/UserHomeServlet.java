@@ -25,12 +25,11 @@ public class UserHomeServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     long userID = (long) request.getSession(false).getAttribute("userID");
     User user = Database.getUserByID(userID);
-    String documentsJSON = convertToJson(Database.getUsersDocuments(userID));
-    
-    HashMap<String, String> documentsData = new HashMap<String, String>();
+  
+    HashMap<String, Object> documentsData = new HashMap<String, Object>();
     documentsData.put("nickname", user.getNickname());
     documentsData.put("email", user.getEmail());
-    documentsData.put("documents", documentsJSON);
+    documentsData.put("documents", Database.getUsersDocuments(userID));
     String documentsDataJSON = convertToJson(documentsData);
     response.setContentType("application/json;");
     response.getWriter().println(documentsDataJSON);

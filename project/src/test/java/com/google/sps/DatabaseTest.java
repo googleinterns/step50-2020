@@ -64,7 +64,7 @@ public final class DatabaseTest {
 
     Assert.assertEquals(userA.getEmail(), (String) userEntity.getProperty("email"));
     Assert.assertEquals(userA.getNickname(), (String) userEntity.getProperty("nickname"));
-    Assert.assertEquals(0, userA.getDocs().size());
+    Assert.assertEquals(0, userA.getDocHashes().size());
   }
 
   @Test
@@ -74,7 +74,7 @@ public final class DatabaseTest {
     User databaseUser = Database.getUserByEmail(userA.getEmail());
     Assert.assertEquals(userA.getUserID(), databaseUser.getUserID());
     Assert.assertEquals(userA.getNickname(), databaseUser.getNickname());
-    Assert.assertEquals(userA.getDocs().size(), databaseUser.getDocs().size());
+    Assert.assertEquals(userA.getDocHashes().size(), databaseUser.getDocHashes().size());
   }
 
   @Test
@@ -84,7 +84,7 @@ public final class DatabaseTest {
     User databaseUser = Database.getUserByID(userA.getUserID());
     Assert.assertEquals(userA.getEmail(), databaseUser.getEmail());
     Assert.assertEquals(userA.getNickname(), databaseUser.getNickname());
-    Assert.assertEquals(userA.getDocs().size(), databaseUser.getDocs().size());
+    Assert.assertEquals(userA.getDocHashes().size(), databaseUser.getDocHashes().size());
   }
 
   @Test
@@ -111,13 +111,11 @@ public final class DatabaseTest {
     Entity docEntity = ds.prepare(documentQuery).asSingleEntity();
     Assert.assertEquals(name, (String) docEntity.getProperty("name"));
     Assert.assertEquals(language, (String) docEntity.getProperty("language"));
-    ArrayList<Long> userIDs = (ArrayList) docEntity.getProperty("userIDs");
-    Assert.assertTrue(userIDs.contains(userID) && userIDs.size() == 1);
 
     // Check that User Entity also contains new doc
     Query userQuery = new Query("User").addFilter("email", Query.FilterOperator.EQUAL, USER_EMAIL_A);
     Entity userEntity = ds.prepare(userQuery).asSingleEntity();
-    ArrayList<String> docHashes = (ArrayList) userEntity.getProperty("documents");
+    ArrayList<String> docHashes = (ArrayList) userEntity.getProperty("docHashes");
     Assert.assertTrue(docHashes.contains(hash) && docHashes.size() == 1);
   }
 
@@ -129,8 +127,6 @@ public final class DatabaseTest {
     Document docA = Database.getDocumentByHash(DOC_HASH_A);
     Assert.assertEquals(DOC_NAME_A, docA.getName());
     Assert.assertEquals(DOC_LANGUAGE_A, docA.getLanguage());
-    ArrayList<Long> userIDs = docA.getUserIDs();
-    Assert.assertTrue(userIDs.contains(userA.getUserID()) && userIDs.size() == 1);
   }
 
   @Test
@@ -138,10 +134,7 @@ public final class DatabaseTest {
     DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
     User userA = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
     Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, userA.getUserID());
-    ArrayList<Long> userIDs = Database.getDocumentUsers(DOC_HASH_A);
-    Assert.assertTrue(userIDs.contains(userA.getUserID()) && userIDs.size() == 1);
   }
-
 
   @Test
   public void testGetUsersDocuments() {
