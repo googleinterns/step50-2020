@@ -118,7 +118,6 @@
         </section>
       </div>
     </div>
-    <comment-component></comment-component>
     <div id="firepad-container"></div>
 
     <script>
