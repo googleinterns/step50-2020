@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
     <link rel="stylesheet" href="main.css" />
     <script type="module" src="./components/toolbar-component.js"></script>
+    <script type="module" src="./components/comment-component.js"></script>
     <script src="script.js"></script>
     <style>
       html {
@@ -117,6 +118,7 @@
         </section>
       </div>
     </div>
+    <comment-component></comment-component>
     <div id="firepad-container"></div>
 
     <script>
