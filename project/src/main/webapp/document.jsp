@@ -19,137 +19,10 @@
     <script src="https://firepad.io/releases/v1.5.9/firepad.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
     <link rel="stylesheet" href="main.css" />
-    <script type="module" src="./components/toolbar-component.js"></script>
-    <script type="module" src="./components/share-component.js"></script>
+    <script type="module" src="./components/document/toolbar-component.js"></script>
+    <script type="module" src="./components/document/share-component.js"></script>
+    <script type="module" src="./components/document/versioning-component.js"></script>
     <script src="script.js"></script>
-    <style>
-      html {
-        height: 100%;
-      }
-      body {
-        margin: 0;
-        height: 100%;
-        position: relative;
-      }
-      /* Height / width / positioning can be customized for your use case.
-          For demo purposes, we make firepad fill the entire browser. */
-      #firepad-container {
-        width: 100%;
-        height: 100%;
-      }
-
-      /* Header/Logo Title */
-      .header {
-        height: 45px;
-        background: white;
-        border: 1px solid white;
-        font-family: roboto;
-        font-size: 30px;
-        font-weight: bold;
-        padding-left: 20px;
-        padding-top: 5px;
-      }
-
-      /* the toolbar with operations */
-      .toolbar {
-        height: 33px;
-        padding: 5px;
-        background: white;
-        border: 1px solid white;
-        padding-left: 20px;
-      }
-
-      .btn-group {
-        float: right;
-        display: flex;
-        justify-content: space-between;
-        width: 215px;
-        margin-right: 25px;
-        margin-top: 5px
-      }
-
-      a {
-        margin-top: -10px;
-      }
-
-      .permissions {
-          position: absolute;
-          right : 60px;
-          top : 84px;
-      }
-
-      .versioning {
-        display: none;
-        background-color: white;
-        z-index: 1;
-        width: 300px;
-        height: 660px;
-        position: absolute;
-        right: 10px;
-        border: solid;
-        border-color: grey;
-      }
-
-      .verion-btn {
-        left: 110px;
-        top: 55px;
-        position: absolute;
-      }
-
-      .close {
-        position: absolute;
-<<<<<<< HEAD
-        top: 25px;
-        right: 11px;
-=======
-        top: 0;
-        right: 14px;
-        font-size: 42px;
-        transform: rotate(45deg);
-        cursor: pointer;
->>>>>>> Create frontend of versioning
-      }
-
-      .versionHeader {
-        border-bottom-color: grey;
-        border-bottom: solid;
-        height: 75px;
-        width: 300px;
-        padding-top: 23px;
-        padding-left: 20px;
-        font-size: 18px;
-      }
-
-      .commitMessage {
-        position : absolute;
-<<<<<<< HEAD
-        right: 4px;
-=======
-        right: 37px;
->>>>>>> Create frontend of versioning
-        top: 550px;
-      }
-
-      .commitButton {
-        position : absolute;
-        top: 600px;
-<<<<<<< HEAD
-        right : 4px;
-      }
-
-      .revisions {
-        border-color: grey;
-      }
-
-      .commits {
-        right : 76px;
-        top : 23px;
-        position : absolute;
-=======
-        right : 114px;
->>>>>>> Create frontend of versioning
-      }
-    </style>
   </head>
 
   <body onload="init(); getHash(); restrict()">
@@ -192,21 +65,9 @@
         </section>
       </div>
     </div>
-    <div class="versioning" id="versioning-block">
-      <div class="close" onclick="closeVersioning()">+</div>
-      <div class="versionHeader">
-        <p>Revisions</p>
-      </div>
-      <div class="commitButton">
-        <button class="primary-blue-btn full-width" id="commit-button"> Commit </button>
-      </div>
-      <div class="commitMessage">
-        <input class="white-input full-width" placeholder="Type a commit message..." id="commit-msg"></input>
-      </div>
-    </div>
+    <versioning-component></versioning-component>
     <div id="firepad-container"></div>
     
-
     <script>
       //Map holding file types of different languages
       var extDict = {
@@ -309,10 +170,6 @@
 
       function showVersioning() {
         document.querySelector('.versioning').style.display = 'flex';
-      }
-
-      function closeVersioning() {
-        document.querySelector('.versioning').style.display = 'none';
       }
 
     </script>
