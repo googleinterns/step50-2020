@@ -46,6 +46,7 @@
   position: absolute
   right: 0
   border: 2px solid $medium-gray
+  flex-direction: column
   .close
     position: absolute
     right: 10px
@@ -53,16 +54,26 @@
   .versioning-header
     border-bottom: 2px solid $medium-gray
     height: 50px
-    padding: 10px
+    padding: 10px 20px
     .versioning-header-toggle
       display: flex
       flex-direction: row
-      justify-content: space-evenly
-      width: 85%
-  .commit-btn-group
+      justify-content: space-between
+      width: 75%
+  .revisions-group
     margin: 20px
+    ul
+      li
+        display: flex
+        justify-content: space-between
+  .commit-btn-group
+    padding: 20px
     position: absolute
     bottom: 150px
+    display: flex
+    flex-direction: column
+    justify-content: space-between
+    height: 160px
   .revisions
     border-color: $medium-gray
   .commits

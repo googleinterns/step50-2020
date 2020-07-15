@@ -184,13 +184,11 @@
         const interval = intervalMinutes * minutesToMilliseconds;
         const firepadRef = getRef();
         const snapshot = await firepadRef.child('history').once('value');
-        var revisionGroup = new Map();
         var earliestTime = Infinity;
         var startOfGroup = true; 
         var counter = 0;
         var groupCounter = 0;
         for (const [hash, value] of Object.entries(snapshot.val())) {
-          const revisionList = revisionGroup.get("revisions");
           if (startOfGroup) {
             earliestTime = value.t;
             startOfGroup = false; 
@@ -199,10 +197,8 @@
           flattenedRevisions.set(hash, value);
           counter += 1;
           if (value.t - earliestTime > interval || counter === Object.keys(snapshot.val()).length) {
-            revisionGroup.set("hash", hash);
-            revisionGroup.set("timestamp", value.t);
+            const revisionGroup = {"hash": hash, "timestamp": earliestTime};
             revisions.push(revisionGroup);
-            revisionGroup = new Map();
             groupCounter += 1;
             startOfGroup = true;
           }
