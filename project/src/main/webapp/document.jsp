@@ -44,7 +44,7 @@
     </div>
     <div class="toolbar">
       <toolbar-component onclick="changeTheme()"></toolbar-component>
-      <button class="verion-btn" onclick="showVersioning()">Versioning</button>
+      <button class="version-btn" onclick="showVersioning()">Versioning</button>
     </div>
     <div class="modal full-width full-height" id="share-modal">
       <div class="modal-background"></div>
@@ -169,6 +169,8 @@
       }
 
       function showVersioning() {
+        // Bind firepad reference to component
+        document.querySelector('versioning-component').firepad = firepad;
         document.querySelector('.versioning').style.display = 'flex';
       }
 
