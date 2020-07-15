@@ -228,7 +228,7 @@
       }
 
       var revisionsCache = new Map();
-      async function createSnapshot(revisionHash) {
+      async function createDocumentSnapshot(revisionHash) {
         firebaseAdapter = firepad.firebaseAdapter_;
         var document = new Firepad.TextOperation();
         const firepadRef = getRef();
@@ -247,15 +247,33 @@
         return document.toJSON();
       }
  
-      function saveCheckpoint(revisionHash, callback) {
+      async function createCheckpoint(revisionHash) {
         firebaseAdapter = firepad.firebaseAdapter_;
-        firebaseAdapter.saveCheckpoint_ = function() {
-          firebaseAdapter.ref_.child('checkpoint').child(revisionHash).update({
-            a: firebaseAdapter.userId_,
-            o: createSnapshot(revisionHash)
-          });
-        };
-        firebaseAdapter.saveCheckpoint_();
+        const document = await createDocumentSnapshot(revisionHash);
+        const snapshot = await firebaseAdapter.ref_.child('checkpoint').child(revisionHash);
+        snapshot.update({
+          a: firebaseAdapter.userId_,
+          o: document
+        });
+      }
+
+      async function revert(revisionHash) {
+        firebaseAdapter = firepad.firebaseAdapter_;
+        firebaseAdapter.ready_ = false;
+        const document = await createDocumentSnapshot(revisionHash);
+        firepad.setText(document);
+        firebaseAdapter.ready_ = true;
+      }
+      
+      async function createCheckpoint(revisionHash) {
+        firebaseAdapter = firepad.firebaseAdapter_;
+      }
+
+      // Group revisions by timestamp on frontend
+      async function getRevisions() {
+        const firepadRef = getRef();
+        const snapshot = await firepadRef.child('history').once('value');
+        return snapshot.val();
       }
 
     </script>
