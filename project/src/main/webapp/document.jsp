@@ -25,7 +25,7 @@
     <script src="script.js"></script>
   </head>
 
-  <body onload="init(); getHash(); restrict()">
+  <body onload="init(); getHash(); restrict(); getRevisions()">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -168,10 +168,46 @@
         a.click();
       }
 
+      var revisions = [];
+      var flattenedRevisions = new Map();
       function showVersioning() {
         // Bind firepad reference to component
         document.querySelector('versioning-component').firepad = firepad;
+        document.querySelector('versioning-component').revisions = revisions;
+        document.querySelector('versioning-component').flattenedRevisions = flattenedRevisions;
         document.querySelector('.versioning').style.display = 'flex';
+      }
+
+      async function getRevisions() {
+        const intervalMinutes = 30;
+        const minutesToMilliseconds = 60000;
+        const interval = intervalMinutes * minutesToMilliseconds;
+        const firepadRef = getRef();
+        const snapshot = await firepadRef.child('history').once('value');
+        var revisionGroup = new Map();
+        var earliestTime = Infinity;
+        var startOfGroup = true; 
+        var counter = 0;
+        var groupCounter = 0;
+        for (const [hash, value] of Object.entries(snapshot.val())) {
+          const revisionList = revisionGroup.get("revisions");
+          if (startOfGroup) {
+            earliestTime = value.t;
+            startOfGroup = false; 
+          }
+          value.group = groupCounter;
+          flattenedRevisions.set(hash, value);
+          counter += 1;
+          if (value.t - earliestTime > interval || counter === Object.keys(snapshot.val()).length) {
+            revisionGroup.set("hash", hash);
+            revisionGroup.set("timestamp", value.t);
+            revisions.push(revisionGroup);
+            revisionGroup = new Map();
+            groupCounter += 1;
+            startOfGroup = true;
+          }
+        }
+        return revisions;
       }
 
     </script>
