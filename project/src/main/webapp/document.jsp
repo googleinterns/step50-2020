@@ -237,15 +237,17 @@
         //insert ending
       }
 
-      //Generate front end for commenting
+      // Generate front end for commenting
       function loadComments() {
-        // Find all special characters and data from widgets
-        var markerList = [];
         var widgetElements = document.getElementsByClassName("CodeMirror-widget");
+        if(widgetElements.length == 0) { return; }
+        var markerList = [];
         var widgetsFound = 0;
-        for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); ++lineIndex) {
+
+        //Identify start and end points of comments and associate appropriate data
+        for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); lineIndex++) {
           var line = codeMirror.getLine(lineIndex);
-          for(var charIndex = 0; charIndex < line.length; ++charIndex) {
+          for(var charIndex = 0; charIndex < line.length; charIndex++) {
             if(line.charCodeAt(charIndex) > 255) {
               var widget = widgetElements[widgetsFound].getElementsByTagName("link")[0];
               markerList.push({line: lineIndex, ch: charIndex, id: widget.getAttribute("data-id"), pos: widget.getAttribute("data-pos")});
@@ -254,13 +256,20 @@
           }
         }
 
-        // Associate data from widgets with corresponding special characters
+        // Create comment stying then remove special characters
         for(var i = 0; i < markerList.length; ++i) {
           if(markerList[i].pos == "end") { continue; }
           var startMarker = markerList[i];
           var endMarker = findEndOfComment(startMarker.id, markerList);
 
-          codeMirror.markText({line:startMarker.line, ch: startMarker.ch}, {line:endMarker.line, ch: endMarker.ch}, {className: "comment " + startMarker.id, attributes: {id: startMarker.id}});
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch}, {className: "comment " + startMarker.id});
+          
+
+          //Remove special character
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
+          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+1}, {readOnly: true});
+          //codeMirror.replaceRange("", {line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+1});
+          //codeMirror.replaceRange("", {line: startMarker.line, ch: startMarker.ch}, {line: startMarker.line, ch: startMarker.ch+1});
         }
         
         /*$('.CodeMirror-widget').each(function(i, obj) {
