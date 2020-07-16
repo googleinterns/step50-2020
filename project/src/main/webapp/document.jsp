@@ -158,6 +158,8 @@
         //// Get Firebase Database reference.
         var firepadRef = getRef()
         firepad = Firepad.fromCodeMirror(firepadRef, codeMirror)
+
+        registerComment();
       }
 
       function changeTheme() {
@@ -212,23 +214,122 @@
 
       //Create comment
       function comment() {
-          var formattedDate = new Intl.DateTimeFormat('en-US', {
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric'
-          }).format(new Date());
+        /*var formattedDate = new Intl.DateTimeFormat('en-US', {
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        }).format(new Date());
         console.log("<%= user.getNickname() %>, " + formattedDate);
 
         var startPos = codeMirror.getCursor(true);
         var endPos = codeMirror.getCursor(false);
-        codeMirror.markText({line:startPos.line, ch:startPos.ch}, {line:endPos.line, ch:endPos.ch}, {className: "comment"});
+        codeMirror.markText({line:startPos.line, ch:startPos.ch}, {line:endPos.line, ch:endPos.ch}, {className: "comment"});*/
+
+        var startPos = codeMirror.getCursor(true);
+        var endPos = codeMirror.getCursor(false);
+        endPos.ch += 1;
+
+        codeMirror.setCursor(startPos);
+        firepad.insertEntity('comment', { id: 1, pos: "start" });
+        codeMirror.setCursor(endPos);
+        firepad.insertEntity('comment', { id: 1, pos: "end" });
+        //insert ending
+      }
+
+      //Generate front end for commenting
+      function loadComments() {
+        // Find all special characters and data from widgets
+        var markerList = [];
+        var widgetElements = document.getElementsByClassName("CodeMirror-widget");
+        var widgetsFound = 0;
+        for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); ++lineIndex) {
+          var line = codeMirror.getLine(lineIndex);
+          for(var charIndex = 0; charIndex < line.length; ++charIndex) {
+            if(line.charCodeAt(charIndex) > 255) {
+              var widget = widgetElements[widgetsFound].getElementsByTagName("link")[0];
+              markerList.push({line: lineIndex, ch: charIndex, id: widget.getAttribute("data-id"), pos: widget.getAttribute("data-pos")});
+              widgetsFound++;
+            }
+          }
+        }
+
+        // Associate data from widgets with corresponding special characters
+        for(var i = 0; i < markerList.length; ++i) {
+          if(markerList[i].pos == "end") { continue; }
+          var startMarker = markerList[i];
+          var endMarker = findEndOfComment(startMarker.id, markerList);
+
+          codeMirror.markText({line:startMarker.line, ch: startMarker.ch}, {line:endMarker.line, ch: endMarker.ch}, {className: "comment " + startMarker.id, attributes: {id: startMarker.id}});
+        }
+        
+        /*$('.CodeMirror-widget').each(function(i, obj) {
+          var marker = obj.firstChild;
+          var commentID = marker.getAttribute("data-id");
+          console.log("Iterating on: " + marker);
+
+          if(marker.getAttribute("data-pos") == "end") {
+            return;
+          }
+          
+          var current = obj;
+          while(true) {
+            // Move to next line if needed
+            if(current.nextElementSibling == null) {
+              console.log("test");
+              current = current.parentElement.parentElement.parentElement.nextSibling.firstChild.nextSibling.firstChild.firstChild;
+            } else {
+              current = current.nextElementSibling;
+            }
+            console.log("Setting class on: " + current.innerHTML);
+            if(current.className.includes("CodeMirror-widget") && current.firstChild.getAttribute("data-id") == marker.getAttribute("data-id")) {
+              break;
+            }
+            current.className += " comment";
+            current.setAttribute("data-commentID", commentID);
+          }
+        });*/
+      }
+
+      // Finds matching endpoint for comment with given ID
+      function findEndOfComment(id, markerList) {
+        return markerList.find(marker => {
+          return marker.id == id && marker.pos == "end"
+        })
       }
 
       //On comment click
       $(document).on('click','.comment',function() {
         console.log("comment clicked");
       });
+
+      function registerComment() {
+        var attrs = ['id', 'pos'];
+        firepad.registerEntity('comment', {
+          render: function(info) {
+            var attrs = ['id', 'pos'];
+            var html = '<link ';
+            for(var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              if (attr in info) {
+                html += ' data-' + attr + '="' + info[attr] + '"';
+              }
+            }
+            html += ">";
+            return html;
+          },
+          fromElement: function(element) {
+            var info = {};
+            for(var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              if (element.hasAttribute(attr)) {
+                info[attr] = element.getAttribute(attr);
+              }
+            }
+            return info;
+          }
+        });
+      }
     </script>
   </body>
 </html>
