@@ -1,24 +1,28 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
+import {convertMillisToTimestamp, revisionToId, revisionFromId} from '../utils.js';
 
 export class VersioningComponent extends LitElement {
   static get properties() {
     return {
       firepad: {type: Object},
-      revisions: {type: Array},
-      flattenedRevisions: {type: Object},
-      latestRevisionHash: {type: String},
+      groupedRevisions: {type: Array},
+      revisionsMap: {type: Object},
+      latestSelectedRevision: {type: String},
       validCommitName: {type: Boolean},
+      commits: {type: Object},
+      show: {type: String},
     };
   }
 
   constructor() {
     super();
     this.firepad = null;
-    this.revisions = [];
-    this.flattenedRevisions = {};
-    this.latestRevisionHash = '';
-    this.characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    this.groupedRevisions = [];
+    this.revisionsMap = {};
+    this.latestSelectedRevision = '';
     this.validCommitName = false;
+    this.commits = [];
+    this.show = 'revisions';
   }
 
   // Remove shadow DOM so styles are inherited
@@ -42,47 +46,13 @@ export class VersioningComponent extends LitElement {
     return firebaseAdapter;
   }
 
-  // Source: Firepad firebase-adapter.js
-  revisionToId(revision) {
-    if (revision === 0) {
-      return 'A0';
-    }
-
-    var str = '';
-    while (revision > 0) {
-      var digit = (revision % this.characters.length);
-      str = this.characters[digit] + str;
-      revision -= digit;
-      revision /= this.characters.length;
-    }
-
-    // Prefix with length (starting at 'A' for length 1) to ensure the id's sort lexicographically.
-    var prefix = this.characters[str.length + 9];
-    return prefix + str;
-  }
-
-  revisionFromId(revisionId) {
-    if (revisionId.length > 0 && revisionId[0] === this.characters[revisionId.length + 8]) {
-      var revision = 0;
-      for(var i = 1; i < revisionId.length; i++) {
-        revision *= this.characters.length;
-        revision += this.characters.indexOf(revisionId[i]);
-      }
-      return revision;  
-    } else {
-      console.log("Invalid revision ID");
-      return -1; 
-    }
-  }
-
+  // Backend functions for Firebase / Firepad manipulations
   async createDocumentSnapshot(revisionHash) {
-    let firebaseAdapter = this.getFirebaseAdapter();
     var document = new Firepad.TextOperation();
-    const firepadRef = firebaseAdapter.ref_;
-    const end = this.revisionFromId(revisionHash);
+    const end = revisionFromId(revisionHash);
     for (let i = 0; i <= end; i++) {
-      const currHash = this.revisionToId(i);
-      var revisionData = this.flattenedRevisions.get(currHash);
+      const currHash = revisionToId(i);
+      var revisionData = this.revisionsMap.get(currHash);
       const revision = Firepad.TextOperation.fromJSON(revisionData.o);
       document = document.compose(revision);
     }
@@ -100,6 +70,7 @@ export class VersioningComponent extends LitElement {
   async createCommit(revisionHash) {
     let commitName = document.getElementById('commit-name').value;
     let commitMsg = document.getElementById('commit-msg').value;
+    let commitTimestamp = this.revisionsMap.get(revisionHash).t;
     let firebaseAdapter = this.getFirebaseAdapter();
     const documentSnapshot = await this.createDocumentSnapshot(revisionHash);
     const snapshot = await firebaseAdapter.ref_.child('commit').child(revisionHash);
@@ -108,32 +79,21 @@ export class VersioningComponent extends LitElement {
       o: documentSnapshot,
       name: commitName, 
       msg: commitMsg,
+      timestamp: commitTimestamp,
     });
   }
 
-  convertMillisToTimestamp(millis) {
-    let date = new Date(millis);
-    const dateOptions = {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-    };
-    date = date.toLocaleString('en-US', dateOptions);
-    return date;
-  }
-
+  // Frontend functions for component interaction
   handleCheckboxClick(index, revisionHash) {
     const checked = document.getElementById(index).checked;
-    for (let i = 0; i <= index; i++) {
+    for (let i = index; i <= this.groupedRevisions.length - 1; i++) {
       const checkbox = document.getElementById(i);
-      checkbox.checked = checked;
+      if (checkbox !== null) {
+        checkbox.checked = checked;
+      }
     }
-    if (revisionHash > this.latestRevisionHash) {
-      this.latestRevisionHash = revisionHash;
+    if (revisionHash > this.latestSelectedRevision) {
+      this.latestSelectedRevision = revisionHash;
     }
   }
 
@@ -142,58 +102,107 @@ export class VersioningComponent extends LitElement {
     this.validCommitName = input.value.length > 0;
   }
 
+  toggleShow(val) {
+    this.show = val;
+  }
+
+  showRevisions() {
+    const latestCommitHash = this.commits.length > 0 ? this.commits[this.commits.length - 1].hash : '';
+    const filteredGroupedRevisions = this.groupedRevisions.filter((revision) => revision.hash > latestCommitHash);
+    console.log(latestCommitHash);
+    return html`
+      <div>
+        <div class="versioning-group">
+          <ul>
+            ${filteredGroupedRevisions.map((revision, i) => {
+              return html`
+                <li>
+                  <a class="underline-link">
+                    ${convertMillisToTimestamp(revision.timestamp)}
+                  </a>
+                  <input 
+                    class="checkbox" 
+                    type="checkbox" 
+                    id=${i} 
+                    @click=${() => this.handleCheckboxClick(i, revision.hash)}>
+                </li>
+              `
+            })}
+          </ul>
+        </div>
+        <div class="commit-btn-group full-width">
+          <input 
+            class="has-text-weight-bold white-input full-width" 
+            placeholder="Commit name"
+            id="commit-name" 
+            @change=${(e) => this.validateCommitName(e)}
+          >
+          </input>
+          <input 
+            class="white-input full-width" 
+            placeholder="Type a commit message..." 
+            id="commit-msg"
+          >
+          </input>
+          ${this.validCommitName && this.latestSelectedRevision !== '' ? 
+            html`
+              <button class="primary-blue-btn full-width" 
+                @click=${() => this.createCommit(this.latestSelectedRevision)}
+              > Commit </button>
+            `
+            :
+            html`
+              <button class="primary-blue-btn full-width disabled" disabled> Commit </button>
+            `
+          }
+        </div>
+      `
+  }
+
+  showCommits() {
+    // A very large hash according to revisionToId / fromId
+    let prevHash = 'zzzzzzzzzz';
+    return html`
+      <div>
+        <div class="versioning-group">
+          <ul>
+            ${this.commits.map((commit) => {
+              console.log(prevHash);
+              const commitRevisions = this.groupedRevisions.filter(
+                  (revision) => revision.hash <= commit.hash);
+              prevHash = commit.hash;
+              return html`
+                <li>
+                  <a class="underline-link">
+                    ${commit.name}
+                    ${commit.msg}
+                  </a>
+                  <ul>
+                      ${commitRevisions.map((revision) => 
+                        html`<li>${convertMillisToTimestamp(revision.timestamp)}</li>`
+                      )}
+                    </ul>
+                </li>
+              `
+            })}
+          </ul>
+        </div>
+      `
+  }
+
   render() {
     return html`
-    <div class="versioning full-height" id="versioning">
-      <div class="versioning-header full-width">
-        <div class="versioning-header-toggle">
-          <button class="text-btn" id="revisions-button"> Revisions </button>
-          <button class="text-btn" id="commits-button"> Commits </button>
+      <div class="versioning full-height" id="versioning">
+        <div class="versioning-header full-width">
+          <div class="versioning-header-toggle">
+            <button class="bold-btn" id="revisions-button" @click=${() => this.toggleShow('revisions')}> Revisions </button>
+            <button class="bold-btn" id="commits-button" @click=${() => this.toggleShow('commits')}> Commits </button>
+          </div>
+          <button class="close delete" @click="${this.closeVersioning}"></button>
         </div>
-        <button class="close delete" @click="${this.closeVersioning}"></button>
+        ${this.show === 'revisions' ? this.showRevisions() : this.showCommits() }  
+        </div>
       </div>
-      <div class="revisions-group">
-        <ul>
-          ${this.revisions.map((_, i) => {
-            let index = this.revisions.length - i - 1;
-            let revision = this.revisions[index];
-            return html`
-              <li>
-                <a class="underline-link">
-                  ${this.convertMillisToTimestamp(revision.timestamp)}
-                </a>
-                <input class="checkbox" type="checkbox" id=${index} @click=${() => this.handleCheckboxClick(i, revision.hash)}>
-              </li>
-            `
-          })}
-        </ul>
-      </div>
-      <div class="commit-btn-group full-width">
-        <input 
-          class="white-input full-width" 
-          placeholder="Commit name"
-          id="commit-name" 
-          @change=${(e) => this.validateCommitName(e)}
-        >
-        </input>
-        <input 
-          class="white-input full-width" 
-          placeholder="Type a commit message..." 
-          id="commit-msg"
-        >
-        </input>
-        ${this.validCommitName && this.latestRevisionHash !== '' ? 
-          html`
-            <button class="primary-blue-btn full-width" @click=${() => this.createCommit(this.latestRevisionHash)}> Commit </button>
-          `
-          :
-          html`
-            <button class="primary-blue-btn full-width disabled" disabled> Commit </button>
-          `
-        }
-        
-      </div>
-    </div>
     `;
   }
 }

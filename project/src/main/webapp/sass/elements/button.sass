@@ -26,6 +26,13 @@
   cursor: pointer
   height: 2 * $normal  
 
+.bold-btn
+  @extend .plain-btn
+  &:hover
+    font-weight: bold
+  &:active
+    font-weight: bold
+
 // Turns grey on hover
 .text-btn
   @extend .plain-btn  

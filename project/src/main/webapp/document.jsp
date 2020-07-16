@@ -25,7 +25,7 @@
     <script src="script.js"></script>
   </head>
 
-  <body onload="init(); getHash(); restrict(); getRevisions()">
+  <body onload="init(); getHash(); restrict(); initializeVersioning()">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -168,14 +168,21 @@
         a.click();
       }
 
-      var revisions = [];
-      var flattenedRevisions = new Map();
+      // All data is ordered latest to earliest
+      var groupedRevisions = [];
+      var revisionsMap = new Map();
+      var commits = [];
       function showVersioning() {
-        // Bind firepad reference to component
         document.querySelector('versioning-component').firepad = firepad;
-        document.querySelector('versioning-component').revisions = revisions;
-        document.querySelector('versioning-component').flattenedRevisions = flattenedRevisions;
+        document.querySelector('versioning-component').groupedRevisions = groupedRevisions;
+        document.querySelector('versioning-component').revisionsMap = revisionsMap;
+        document.querySelector('versioning-component').commits = commits;
         document.querySelector('.versioning').style.display = 'flex';
+      }
+
+      async function initializeVersioning() {
+        await getRevisions();
+        await getCommits();
       }
 
       async function getRevisions() {
@@ -194,16 +201,30 @@
             startOfGroup = false; 
           }
           value.group = groupCounter;
-          flattenedRevisions.set(hash, value);
+          revisionsMap.set(hash, value);
           counter += 1;
           if (value.t - earliestTime > interval || counter === Object.keys(snapshot.val()).length) {
             const revisionGroup = {"hash": hash, "timestamp": earliestTime};
-            revisions.push(revisionGroup);
+            groupedRevisions.unshift(revisionGroup);
             groupCounter += 1;
             startOfGroup = true;
           }
         }
-        return revisions;
+        return groupedRevisions;
+      }
+
+      async function getCommits() {
+        const firepadRef = getRef();
+        const snapshot = await firepadRef.child('commit').once('value');
+        try {
+          for (const [hash, value] of Object.entries(snapshot.val())) {
+            value.hash = hash;
+            commits.unshift(value);
+          }
+        } catch(e) {
+          console.log("There are no commits");
+        }
+        return commits;
       }
 
     </script>
