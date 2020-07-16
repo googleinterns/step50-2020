@@ -5,7 +5,9 @@ export class VersioningComponent extends LitElement {
     return {
       firepad: {type: Object},
       revisions: {type: Array},
-      flattenedRevisions: {type: Object}
+      flattenedRevisions: {type: Object},
+      latestRevisionHash: {type: String},
+      validCommitName: {type: Boolean},
     };
   }
 
@@ -14,6 +16,9 @@ export class VersioningComponent extends LitElement {
     this.firepad = null;
     this.revisions = [];
     this.flattenedRevisions = {};
+    this.latestRevisionHash = '';
+    this.characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    this.validCommitName = false;
   }
 
   // Remove shadow DOM so styles are inherited
@@ -37,50 +42,72 @@ export class VersioningComponent extends LitElement {
     return firebaseAdapter;
   }
 
+  // Source: Firepad firebase-adapter.js
+  revisionToId(revision) {
+    if (revision === 0) {
+      return 'A0';
+    }
+
+    var str = '';
+    while (revision > 0) {
+      var digit = (revision % this.characters.length);
+      str = this.characters[digit] + str;
+      revision -= digit;
+      revision /= this.characters.length;
+    }
+
+    // Prefix with length (starting at 'A' for length 1) to ensure the id's sort lexicographically.
+    var prefix = this.characters[str.length + 9];
+    return prefix + str;
+  }
+
+  revisionFromId(revisionId) {
+    if (revisionId.length > 0 && revisionId[0] === this.characters[revisionId.length + 8]) {
+      var revision = 0;
+      for(var i = 1; i < revisionId.length; i++) {
+        revision *= this.characters.length;
+        revision += this.characters.indexOf(revisionId[i]);
+      }
+      return revision;  
+    } else {
+      console.log("Invalid revision ID");
+      return -1; 
+    }
+  }
+
   async createDocumentSnapshot(revisionHash) {
-    firebaseAdapter = this.getFirebaseAdapter();
+    let firebaseAdapter = this.getFirebaseAdapter();
     var document = new Firepad.TextOperation();
-    const firepadRef = getRef();
-    const end = revisionFromId(revisionHash);
-    for (i = 0; i <= end; i++) {
-      const currHash = revisionToId(i);
+    const firepadRef = firebaseAdapter.ref_;
+    const end = this.revisionFromId(revisionHash);
+    for (let i = 0; i <= end; i++) {
+      const currHash = this.revisionToId(i);
       var revisionData = this.flattenedRevisions.get(currHash);
-      /*if (revisionData === undefined) {
-        const snapshot = await firepadRef.child('history').child(currHash).once('value');
-        revisionData = snapshot.val();
-        this.revisionsCache.set(currHash, revisionData);
-      }*/
       const revision = Firepad.TextOperation.fromJSON(revisionData.o);
       document = document.compose(revision);
     }
     return document.toJSON();
   }
 
-  async createCheckpoint(revisionHash) {
-    firebaseAdapter = this.getFirebaseAdapter();
-    const document = await createDocumentSnapshot(revisionHash);
-    const snapshot = await firebaseAdapter.ref_.child('checkpoint').child(revisionHash);
-    snapshot.update({
-      a: firebaseAdapter.userId_,
-      o: document
-    });
-  }
-
   async revert(revisionHash) {
-    firebaseAdapter = this.getFirebaseAdapter();
+    let firebaseAdapter = this.getFirebaseAdapter();
     firebaseAdapter.ready_ = false;
-    const document = await createDocumentSnapshot(revisionHash);
+    const document = await this.createDocumentSnapshot(revisionHash);
     firepad.setText(document);
     firebaseAdapter.ready_ = true;
   }
   
-  async createCheckpoint(revisionHash) {
-    firebaseAdapter = this.getFirebaseAdapter();
-    const document = await createDocumentSnapshot(revisionHash);
-    const snapshot = await firebaseAdapter.ref_.child('checkpoint').child(revisionHash);
+  async createCommit(revisionHash) {
+    let commitName = document.getElementById('commit-name').value;
+    let commitMsg = document.getElementById('commit-msg').value;
+    let firebaseAdapter = this.getFirebaseAdapter();
+    const documentSnapshot = await this.createDocumentSnapshot(revisionHash);
+    const snapshot = await firebaseAdapter.ref_.child('commit').child(revisionHash);
     snapshot.update({
       a: firebaseAdapter.userId_,
-      o: document
+      o: documentSnapshot,
+      name: commitName, 
+      msg: commitMsg,
     });
   }
 
@@ -99,17 +126,23 @@ export class VersioningComponent extends LitElement {
     return date;
   }
 
-  handleCheckboxClick(index) {
+  handleCheckboxClick(index, revisionHash) {
     const checked = document.getElementById(index).checked;
-    for (let i = index; i < this.revisions.length; i++) {
+    for (let i = 0; i <= index; i++) {
       const checkbox = document.getElementById(i);
       checkbox.checked = checked;
     }
+    if (revisionHash > this.latestRevisionHash) {
+      this.latestRevisionHash = revisionHash;
+    }
   }
 
-  // flattened revisions
+  validateCommitName(e) {
+    const input = e.target;
+    this.validCommitName = input.value.length > 0;
+  }
+
   render() {
-    console.log(revisions);
     return html`
     <div class="versioning full-height" id="versioning">
       <div class="versioning-header full-width">
@@ -121,22 +154,44 @@ export class VersioningComponent extends LitElement {
       </div>
       <div class="revisions-group">
         <ul>
-          ${this.revisions.reverse().map((revision, index) =>
-            html`
+          ${this.revisions.map((_, i) => {
+            let index = this.revisions.length - i - 1;
+            let revision = this.revisions[index];
+            return html`
               <li>
                 <a class="underline-link">
                   ${this.convertMillisToTimestamp(revision.timestamp)}
                 </a>
-                <input class="checkbox" type="checkbox" id=${index} @click=${() => this.handleCheckboxClick(index)}>
+                <input class="checkbox" type="checkbox" id=${index} @click=${() => this.handleCheckboxClick(i, revision.hash)}>
               </li>
             `
-          )}
+          })}
         </ul>
       </div>
       <div class="commit-btn-group full-width">
-        <input class="white-input full-width" placeholder="Commit name"></input>
-        <input class="white-input full-width" placeholder="Type a commit message..."></input>
-        <button class="primary-blue-btn full-width" @click=${() => this.createCheckpoint('A2')}> Commit </button>
+        <input 
+          class="white-input full-width" 
+          placeholder="Commit name"
+          id="commit-name" 
+          @change=${(e) => this.validateCommitName(e)}
+        >
+        </input>
+        <input 
+          class="white-input full-width" 
+          placeholder="Type a commit message..." 
+          id="commit-msg"
+        >
+        </input>
+        ${this.validCommitName && this.latestRevisionHash !== '' ? 
+          html`
+            <button class="primary-blue-btn full-width" @click=${() => this.createCommit(this.latestRevisionHash)}> Commit </button>
+          `
+          :
+          html`
+            <button class="primary-blue-btn full-width disabled" disabled> Commit </button>
+          `
+        }
+        
       </div>
     </div>
     `;
