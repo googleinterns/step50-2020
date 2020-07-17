@@ -78,7 +78,7 @@
     </style>
   </head>
 
-  <body onload="init(); getHash()">
+  <body onload="init(); getHash(); setTimeout(function(){ loadComments() }, 2000)">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -230,11 +230,25 @@
         var endPos = codeMirror.getCursor(false);
         endPos.ch += 1;
 
+        for(var i = 0; i < codeMirror.getLine(startPos.line).length; i++)  {
+          if(codeMirror.getLine(startPos.line).charCodeAt(i) > 255) {
+            //deal with multiple comments on same line
+            return;
+          }
+        }
+
+        for(var i = 0; i < codeMirror.getLine(endPos.line).length; i++)  {
+          if(codeMirror.getLine(endPos.line).charCodeAt(i) > 255) {
+            //deal with multiple comments on same line
+            return;
+          }
+        }
+
+        var num = Math.random()*10000;
         codeMirror.setCursor(startPos);
-        firepad.insertEntity('comment', { id: 1, pos: "start" });
+        firepad.insertEntity('comment', { id: num, pos: "start" });
         codeMirror.setCursor(endPos);
-        firepad.insertEntity('comment', { id: 1, pos: "end" });
-        //insert ending
+        firepad.insertEntity('comment', { id: num, pos: "end" });
       }
 
       // Generate front end for commenting
@@ -257,17 +271,31 @@
         }
 
         // Create comment stying then remove special characters
-        for(var i = 0; i < markerList.length; ++i) {
+        for(var i = 0; i < markerList.length; i++) {
           if(markerList[i].pos == "end") { continue; }
           var startMarker = markerList[i];
           var endMarker = findEndOfComment(startMarker.id, markerList);
 
-          codeMirror.markText({line: startMarker.line, ch: startMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch}, {className: "comment " + startMarker.id});
-          
+          var charAfterLast = codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
+          var charBeforeFirst = codeMirror.getRange({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch});
+          console.log("before: " + charBeforeFirst + " after: " + charAfterLast);
 
-          //Remove special character
-          codeMirror.markText({line: startMarker.line, ch: startMarker.ch}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
-          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+1}, {readOnly: true});
+          if (charAfterLast != " ") {
+            codeMirror.replaceRange(" " + codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2}), {line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
+          }
+          if (charBeforeFirst != " ") {
+            codeMirror.replaceRange(codeMirror.getRange({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch}) + " ", {line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch});
+            startMarker.ch++;
+            if (startMarker.line == endMarker.line) {
+              endMarker.ch++;
+            }
+          }
+
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id});
+
+          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {readOnly: true});
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
+         
           //codeMirror.replaceRange("", {line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+1});
           //codeMirror.replaceRange("", {line: startMarker.line, ch: startMarker.ch}, {line: startMarker.line, ch: startMarker.ch+1});
         }
