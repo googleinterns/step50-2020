@@ -65,7 +65,7 @@
         </section>
       </div>
     </div>
-    <versioning-component></versioning-component>
+    <versioning-component onclose="init()"></versioning-component>
     <div id="firepad-container"></div>
     
     <script>
@@ -97,16 +97,18 @@
 
       function init() {
         //// Initialize Firebase.
-        var config = {
+        if (firebase.apps.length === 0) {
+          var config = {
             apiKey: 'AIzaSyDUYns7b2bTK3Go4dvT0slDcUchEtYlSWc',
             authDomain: "step-collaborative-code-editor.firebaseapp.com",
             databaseURL: "https://step-collaborative-code-editor.firebaseio.com"
-        };
-        firebase.initializeApp(config);
-
+          };
+          firebase.initializeApp(config);
+        }
         //// Get Firebase Database reference.
-        var firepadRef = getRef()
-        firepad = Firepad.fromCodeMirror(firepadRef, codeMirror)
+        var firepadRef = getRef();
+        codeMirror.setValue('');
+        firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
       }
 
       function restrict() {
@@ -168,12 +170,13 @@
         a.click();
       }
 
-      // All data is ordered latest to earliest
+      /* Versioning Functions */
       var groupedRevisions = [];
       var revisionsMap = new Map();
       var commits = [];
       function showVersioning() {
         document.querySelector('versioning-component').firepad = firepad;
+        document.querySelector('versioning-component').codeMirror = codeMirror;
         document.querySelector('versioning-component').groupedRevisions = groupedRevisions;
         document.querySelector('versioning-component').revisionsMap = revisionsMap;
         document.querySelector('versioning-component').commits = commits;
@@ -186,45 +189,49 @@
       }
 
       async function getRevisions() {
-        const intervalMinutes = 30;
-        const minutesToMilliseconds = 60000;
-        const interval = intervalMinutes * minutesToMilliseconds;
         const firepadRef = getRef();
-        const snapshot = await firepadRef.child('history').once('value');
-        var earliestTime = Infinity;
-        var startOfGroup = true; 
-        var counter = 0;
-        var groupCounter = 0;
-        for (const [hash, value] of Object.entries(snapshot.val())) {
-          if (startOfGroup) {
-            earliestTime = value.t;
-            startOfGroup = false; 
-          }
-          value.group = groupCounter;
-          revisionsMap.set(hash, value);
-          counter += 1;
-          if (value.t - earliestTime > interval || counter === Object.keys(snapshot.val()).length) {
-            const revisionGroup = {"hash": hash, "timestamp": earliestTime};
-            groupedRevisions.unshift(revisionGroup);
-            groupCounter += 1;
-            startOfGroup = true;
-          }
-        }
+        firepadRef.child('history').on('child_added', (snapshot) => {
+          addRevision(snapshot.key, snapshot.val());
+        });
         return groupedRevisions;
+      }
+
+      const intervalMinutes = 30;
+      const minutesToMilliseconds = 60000;
+      const interval = intervalMinutes * minutesToMilliseconds;
+      var earliestTime = -Infinity;
+      var groupCounter = 0; 
+      function addRevision(hash, value) {
+        value.group = groupCounter;
+        revisionsMap.set(hash, value);
+        if (value.t - earliestTime > interval) {
+          const newRevisionGroup = {"hash": hash, "timestamp": value.t};
+          groupedRevisions.unshift(newRevisionGroup);
+          groupCounter += 1;
+          earliestTime = value.t;
+          revisionsMap.set(hash, value);
+        } else {
+          const prevRevisionGroup = groupedRevisions[0];
+          prevRevisionGroup.hash = hash;
+        }
+        document.querySelector('versioning-component').groupedRevisions = groupedRevisions;
+        document.querySelector('versioning-component').revisionsMap = revisionsMap;
+        document.querySelector('versioning-component').requestUpdate();
       }
 
       async function getCommits() {
         const firepadRef = getRef();
-        const snapshot = await firepadRef.child('commit').once('value');
-        try {
-          for (const [hash, value] of Object.entries(snapshot.val())) {
-            value.hash = hash;
-            commits.unshift(value);
-          }
-        } catch(e) {
-          console.log("There are no commits");
-        }
+        firepadRef.child('commit').on('child_added', (snapshot) => {
+          addCommit(snapshot.key, snapshot.val());
+        });
         return commits;
+      }
+
+      function addCommit(hash, value) {
+        value.hash = hash;
+        commits.unshift(value);
+        document.querySelector('versioning-component').commits = commits;
+        document.querySelector('versioning-component').requestUpdate();
       }
 
     </script>

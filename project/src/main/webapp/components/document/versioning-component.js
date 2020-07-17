@@ -5,6 +5,7 @@ export class VersioningComponent extends LitElement {
   static get properties() {
     return {
       firepad: {type: Object},
+      codeMirror: {type: Object},
       groupedRevisions: {type: Array},
       revisionsMap: {type: Object},
       latestSelectedRevision: {type: String},
@@ -16,7 +17,6 @@ export class VersioningComponent extends LitElement {
 
   constructor() {
     super();
-    this.firepad = null;
     this.groupedRevisions = [];
     this.revisionsMap = {};
     this.latestSelectedRevision = '';
@@ -31,7 +31,9 @@ export class VersioningComponent extends LitElement {
   }
 
   closeVersioning() {
+    codeMirror.options.readOnly = false;
     document.getElementById('versioning').style.display = 'none';
+    this.dispatchEvent(new CustomEvent('close'));
   }
 
   getFirebaseAdapter() {
@@ -46,7 +48,7 @@ export class VersioningComponent extends LitElement {
     return firebaseAdapter;
   }
 
-  // Backend functions for Firebase / Firepad manipulations
+  /* Backend functions for Firebase / Firepad manipulations */
   async createDocumentSnapshot(revisionHash) {
     var document = new Firepad.TextOperation();
     const end = revisionFromId(revisionHash);
@@ -59,31 +61,59 @@ export class VersioningComponent extends LitElement {
     return document.toJSON();
   }
 
-  async revert(revisionHash) {
+  async revert(hash) {
+    this.lockLink(hash);
+    // Signal to style firepad as disabled
+    this.dispatchEvent(new CustomEvent('disabled'));
     let firebaseAdapter = this.getFirebaseAdapter();
     firebaseAdapter.ready_ = false;
-    const document = await this.createDocumentSnapshot(revisionHash);
-    firepad.setText(document);
+    const documentSnapshot = await this.createDocumentSnapshot(hash);
+    if (documentSnapshot.length > 0) {
+      firepad.setText(documentSnapshot[documentSnapshot.length - 1]);
+    } else {
+      firepad.setText(documentSnapshot);
+    }
     firebaseAdapter.ready_ = true;
+    codeMirror.options.readOnly = 'nocursor';
+  }
+
+  lockLink(hash) {
+    const links = document.getElementsByClassName("underline-link");
+    for (const link of links) {
+      if (link.id === hash) {
+        link.style.textDecoration = "underline";
+      } else {
+        link.style.textDecoration = "none";
+      }
+    }
   }
   
-  async createCommit(revisionHash) {
-    let commitName = document.getElementById('commit-name').value;
-    let commitMsg = document.getElementById('commit-msg').value;
-    let commitTimestamp = this.revisionsMap.get(revisionHash).t;
-    let firebaseAdapter = this.getFirebaseAdapter();
+  async createCommit() {
+    const revisionHash = this.latestSelectedRevision;
+    this.latestSelectedRevision = '';
+    const nameInput = document.getElementById('commit-name');
+    const msgInput = document.getElementById('commit-msg');
+    const commitTimestamp = this.revisionsMap.get(revisionHash).t;
+    const firebaseAdapter = this.getFirebaseAdapter();
     const documentSnapshot = await this.createDocumentSnapshot(revisionHash);
     const snapshot = await firebaseAdapter.ref_.child('commit').child(revisionHash);
     snapshot.update({
       a: firebaseAdapter.userId_,
       o: documentSnapshot,
-      name: commitName, 
-      msg: commitMsg,
+      name: nameInput.value, 
+      msg: msgInput.value,
       timestamp: commitTimestamp,
     });
+    this.resetCommitForm(nameInput, msgInput);
   }
 
-  // Frontend functions for component interaction
+  /* Frontend functions for component interaction */
+  resetCommitForm(nameInput, msgInput) {
+    nameInput.value = '';
+    msgInput.value = '';
+    this.requestUpdate();
+  }
+
   handleCheckboxClick(index, revisionHash) {
     const checked = document.getElementById(index).checked;
     for (let i = index; i <= this.groupedRevisions.length - 1; i++) {
@@ -102,14 +132,21 @@ export class VersioningComponent extends LitElement {
     this.validCommitName = input.value.length > 0;
   }
 
-  toggleShow(val) {
+  lockBtn(val) {
     this.show = val;
+    const boldBtns = document.getElementsByClassName("bold-btn");
+    for (const btn of boldBtns) {
+      if (btn.id === val) {
+        btn.style.fontWeight = "bold";
+      } else {
+        btn.style.fontWeight = "normal";
+      }
+    }
   }
 
   showRevisions() {
-    const latestCommitHash = this.commits.length > 0 ? this.commits[this.commits.length - 1].hash : '';
+    const latestCommitHash = this.commits.length > 0 ? this.commits[0].hash : '';
     const filteredGroupedRevisions = this.groupedRevisions.filter((revision) => revision.hash > latestCommitHash);
-    console.log(latestCommitHash);
     return html`
       <div>
         <div class="versioning-group">
@@ -117,14 +154,19 @@ export class VersioningComponent extends LitElement {
             ${filteredGroupedRevisions.map((revision, i) => {
               return html`
                 <li>
-                  <a class="underline-link">
+                  <a 
+                    class="underline-link"
+                    id=${revision.hash}
+                    @click=${() => this.revert(revision.hash)}
+                  >
                     ${convertMillisToTimestamp(revision.timestamp)}
                   </a>
                   <input 
                     class="checkbox" 
                     type="checkbox" 
                     id=${i} 
-                    @click=${() => this.handleCheckboxClick(i, revision.hash)}>
+                    @click=${() => this.handleCheckboxClick(i, revision.hash)} 
+                  />
                 </li>
               `
             })}
@@ -136,18 +178,16 @@ export class VersioningComponent extends LitElement {
             placeholder="Commit name"
             id="commit-name" 
             @change=${(e) => this.validateCommitName(e)}
-          >
-          </input>
+          />
           <input 
             class="white-input full-width" 
             placeholder="Type a commit message..." 
             id="commit-msg"
-          >
-          </input>
+          />
           ${this.validCommitName && this.latestSelectedRevision !== '' ? 
             html`
               <button class="primary-blue-btn full-width" 
-                @click=${() => this.createCommit(this.latestSelectedRevision)}
+                @click="${this.createCommit}"
               > Commit </button>
             `
             :
@@ -160,34 +200,35 @@ export class VersioningComponent extends LitElement {
   }
 
   showCommits() {
-    // A very large hash according to revisionToId / fromId
-    let prevHash = 'zzzzzzzzzz';
     return html`
       <div>
         <div class="versioning-group">
           <ul>
-            ${this.commits.map((commit) => {
-              console.log(prevHash);
-              const commitRevisions = this.groupedRevisions.filter(
-                  (revision) => revision.hash <= commit.hash);
-              prevHash = commit.hash;
-              return html`
+            ${this.commits.map((commit) => 
+              html`
                 <li>
-                  <a class="underline-link">
-                    ${commit.name}
-                    ${commit.msg}
-                  </a>
-                  <ul>
-                      ${commitRevisions.map((revision) => 
-                        html`<li>${convertMillisToTimestamp(revision.timestamp)}</li>`
-                      )}
-                    </ul>
+                  <div>
+                    <a 
+                      class="underline-link"
+                      id=${commit.hash}
+                      @click=${() => this.revert(commit.hash)}
+                    >
+                      <b>${commit.name}</b>
+                    </a>
+                    <div class="indent">
+                      ${commit.msg}
+                    </div>
+                  </div>
+                  <input 
+                    class="checkbox" 
+                    type="checkbox"
+                  />
                 </li>
               `
-            })}
+            )}
           </ul>
         </div>
-      `
+    `
   }
 
   render() {
@@ -195,8 +236,8 @@ export class VersioningComponent extends LitElement {
       <div class="versioning full-height" id="versioning">
         <div class="versioning-header full-width">
           <div class="versioning-header-toggle">
-            <button class="bold-btn" id="revisions-button" @click=${() => this.toggleShow('revisions')}> Revisions </button>
-            <button class="bold-btn" id="commits-button" @click=${() => this.toggleShow('commits')}> Commits </button>
+            <button class="bold-btn" id="revisions" @click=${() => this.lockBtn('revisions')}> Revisions </button>
+            <button class="bold-btn" id="commits" @click=${() => this.lockBtn('commits')}> Commits </button>
           </div>
           <button class="close delete" @click="${this.closeVersioning}"></button>
         </div>
