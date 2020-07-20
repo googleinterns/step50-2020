@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/javascript/javascript.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/mode/clike/clike.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/ayu-dark.css" />
@@ -21,6 +22,8 @@
     <link rel="stylesheet" href="main.css" />
     <script type="module" src="./components/toolbar-component.js"></script>
     <script type="module" src="./components/share-component.js"></script>
+    <script src="closebrackets.js"></script>
+    <script src="matchbrackets.js"></script>
     <script type="module" src="./components/comment-component.js"></script>
     <script src="script.js"></script>
     <style>
@@ -204,13 +207,16 @@
       var extDict = {
         "Python": "py",
         "Javascript": "js",
-        "Java": "java",
-        "C++": "cpp",
+        "text/x-java": "java",
+        "text/x-c++src": "cpp",
         "Go": "go"
       };
 
       var codeMirror = CodeMirror(document.getElementById("firepad-container"), {
         lineNumbers: true,
+        matchBrackets: true,
+        indentWithTabs: true,
+        autoCloseBrackets: true,
         mode: "<%= document.getLanguage().toLowerCase() %>",
         theme: "neo",
       })
