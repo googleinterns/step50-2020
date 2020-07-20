@@ -214,17 +214,13 @@
 
       //Create comment
       function comment() {
-        /*var formattedDate = new Intl.DateTimeFormat('en-US', {
+        var formattedDate = new Intl.DateTimeFormat('en-US', {
           month: 'long',
           day: 'numeric',
           hour: 'numeric',
           minute: 'numeric'
         }).format(new Date());
         console.log("<%= user.getNickname() %>, " + formattedDate);
-
-        var startPos = codeMirror.getCursor(true);
-        var endPos = codeMirror.getCursor(false);
-        codeMirror.markText({line:startPos.line, ch:startPos.ch}, {line:endPos.line, ch:endPos.ch}, {className: "comment"});*/
 
         var startPos = codeMirror.getCursor(true);
         var endPos = codeMirror.getCursor(false);
@@ -244,11 +240,18 @@
           }
         }
 
-        var num = Math.random()*10000;
-        codeMirror.setCursor(startPos);
-        firepad.insertEntity('comment', { id: num, pos: "start" });
-        codeMirror.setCursor(endPos);
-        firepad.insertEntity('comment', { id: num, pos: "end" });
+        // Create comment in database
+        xhttp.open("GET", "/Comment?" + "data=" + /* Comment text */ + "date=" /* Date & time */+ , true);
+        xhttp.onreadystatechange = function() {
+          if(xhttp.readyState == 4 && xhttp.status == 200) {
+            codeMirror.setCursor(startPos);
+            firepad.insertEntity('comment', { id: this.responseText, pos: "start" });
+            codeMirror.setCursor(endPos);
+            firepad.insertEntity('comment', { id: this.responseText, pos: "end" });
+            loadComments();         
+          }
+        }
+        xhttp.send();
       }
 
       // Generate front end for commenting
@@ -258,11 +261,12 @@
         var markerList = [];
         var widgetsFound = 0;
 
-        //Identify start and end points of comments and associate appropriate data
+        // Identify start and end points of comments and associate appropriate data
         for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); lineIndex++) {
           var line = codeMirror.getLine(lineIndex);
           for(var charIndex = 0; charIndex < line.length; charIndex++) {
             if(line.charCodeAt(charIndex) > 255) {
+              // Grab the data inside the entity that was created
               var widget = widgetElements[widgetsFound].getElementsByTagName("link")[0];
               markerList.push({line: lineIndex, ch: charIndex, id: widget.getAttribute("data-id"), pos: widget.getAttribute("data-pos")});
               widgetsFound++;
@@ -276,10 +280,11 @@
           var startMarker = markerList[i];
           var endMarker = findEndOfComment(startMarker.id, markerList);
 
+          // Grab adjacent characters
           var charAfterLast = codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
           var charBeforeFirst = codeMirror.getRange({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch});
-          console.log("before: " + charBeforeFirst + " after: " + charAfterLast);
 
+          // Add a space before and/or after the comment if there isn't one
           if (charAfterLast != " ") {
             codeMirror.replaceRange(" " + codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2}), {line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
           }
@@ -291,41 +296,13 @@
             }
           }
 
+          // Highlight the text and give it the id of the associated comment
           codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id});
 
+          // Make the start and end markers read only so that the user doesn't accidentally delete them
           codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {readOnly: true});
           codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
-         
-          //codeMirror.replaceRange("", {line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+1});
-          //codeMirror.replaceRange("", {line: startMarker.line, ch: startMarker.ch}, {line: startMarker.line, ch: startMarker.ch+1});
         }
-        
-        /*$('.CodeMirror-widget').each(function(i, obj) {
-          var marker = obj.firstChild;
-          var commentID = marker.getAttribute("data-id");
-          console.log("Iterating on: " + marker);
-
-          if(marker.getAttribute("data-pos") == "end") {
-            return;
-          }
-          
-          var current = obj;
-          while(true) {
-            // Move to next line if needed
-            if(current.nextElementSibling == null) {
-              console.log("test");
-              current = current.parentElement.parentElement.parentElement.nextSibling.firstChild.nextSibling.firstChild.firstChild;
-            } else {
-              current = current.nextElementSibling;
-            }
-            console.log("Setting class on: " + current.innerHTML);
-            if(current.className.includes("CodeMirror-widget") && current.firstChild.getAttribute("data-id") == marker.getAttribute("data-id")) {
-              break;
-            }
-            current.className += " comment";
-            current.setAttribute("data-commentID", commentID);
-          }
-        });*/
       }
 
       // Finds matching endpoint for comment with given ID
@@ -337,6 +314,7 @@
 
       //On comment click
       $(document).on('click','.comment',function() {
+        // Do real stuff
         console.log("comment clicked");
       });
 
