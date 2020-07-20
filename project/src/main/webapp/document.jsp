@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/javascript/javascript.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/mode/clike/clike.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
@@ -67,7 +68,7 @@
         float: right;
         display: flex;
         justify-content: space-between;
-        width: 215px;
+        width: 290px;
         margin-right: 25px;
         margin-top: 5px
       }
@@ -76,6 +77,10 @@
         margin-top: -10px;
       }
 
+      .comment {
+        background-color: yellow;
+      }
+      
       .permissions {
           position: absolute;
           right : 60px;
@@ -140,7 +145,7 @@
     </style>
   </head>
 
-  <body onload="init(); getHash(); restrict()">
+  <body onload="init(); getHash(); setTimeout(function(){ loadComments() }, 2000)">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -152,6 +157,7 @@
           response.sendRedirect("/");  
         } %>
       <div class="btn-group">
+        <button class="white-btn" onclick="comment()"> Comment </button>
         <button class="white-btn" onclick="showModal()"> Share </button>
         <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
         <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
@@ -244,6 +250,8 @@
         //// Get Firebase Database reference.
         var firepadRef = getRef()
         firepad = Firepad.fromCodeMirror(firepadRef, codeMirror)
+
+        registerComment();
       }
 
       function restrict() {
@@ -305,6 +313,140 @@
         a.click();
       }
 
+
+      //Create comment
+      function comment() {
+        var formattedDate = new Intl.DateTimeFormat('en-US', {
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        }).format(new Date());
+        console.log("<%= user.getNickname() %>, " + formattedDate);
+
+        var startPos = codeMirror.getCursor(true);
+        var endPos = codeMirror.getCursor(false);
+        endPos.ch += 1;
+
+        for(var i = 0; i < codeMirror.getLine(startPos.line).length; i++)  {
+          if(codeMirror.getLine(startPos.line).charCodeAt(i) > 255) {
+            //deal with multiple comments on same line
+            return;
+          }
+        }
+
+        for(var i = 0; i < codeMirror.getLine(endPos.line).length; i++)  {
+          if(codeMirror.getLine(endPos.line).charCodeAt(i) > 255) {
+            //deal with multiple comments on same line
+            return;
+          }
+        }
+
+        // Create comment in database
+        xhttp.open("GET", "/Comment?" + "data=" + /* Comment text */ + "date=" /* Date & time */+ , true);
+        xhttp.onreadystatechange = function() {
+          if(xhttp.readyState == 4 && xhttp.status == 200) {
+            codeMirror.setCursor(startPos);
+            firepad.insertEntity('comment', { id: this.responseText, pos: "start" });
+            codeMirror.setCursor(endPos);
+            firepad.insertEntity('comment', { id: this.responseText, pos: "end" });
+            loadComments();         
+          }
+        }
+        xhttp.send();
+      }
+
+      // Generate front end for commenting
+      function loadComments() {
+        var widgetElements = document.getElementsByClassName("CodeMirror-widget");
+        if(widgetElements.length == 0) { return; }
+        var markerList = [];
+        var widgetsFound = 0;
+
+        // Identify start and end points of comments and associate appropriate data
+        for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); lineIndex++) {
+          var line = codeMirror.getLine(lineIndex);
+          for(var charIndex = 0; charIndex < line.length; charIndex++) {
+            if(line.charCodeAt(charIndex) > 255) {
+              // Grab the data inside the entity that was created
+              var widget = widgetElements[widgetsFound].getElementsByTagName("link")[0];
+              markerList.push({line: lineIndex, ch: charIndex, id: widget.getAttribute("data-id"), pos: widget.getAttribute("data-pos")});
+              widgetsFound++;
+            }
+          }
+        }
+
+        // Create comment stying then remove special characters
+        for(var i = 0; i < markerList.length; i++) {
+          if(markerList[i].pos == "end") { continue; }
+          var startMarker = markerList[i];
+          var endMarker = findEndOfComment(startMarker.id, markerList);
+
+          // Grab adjacent characters
+          var charAfterLast = codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
+          var charBeforeFirst = codeMirror.getRange({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch});
+
+          // Add a space before and/or after the comment if there isn't one
+          if (charAfterLast != " ") {
+            codeMirror.replaceRange(" " + codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2}), {line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
+          }
+          if (charBeforeFirst != " ") {
+            codeMirror.replaceRange(codeMirror.getRange({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch}) + " ", {line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch});
+            startMarker.ch++;
+            if (startMarker.line == endMarker.line) {
+              endMarker.ch++;
+            }
+          }
+
+          // Highlight the text and give it the id of the associated comment
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id});
+
+          // Make the start and end markers read only so that the user doesn't accidentally delete them
+          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {readOnly: true});
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
+        }
+      }
+
+      // Finds matching endpoint for comment with given ID
+      function findEndOfComment(id, markerList) {
+        return markerList.find(marker => {
+          return marker.id == id && marker.pos == "end"
+        })
+      }
+
+      //On comment click
+      $(document).on('click','.comment',function() {
+        // Do real stuff
+        console.log("comment clicked");
+      });
+
+      function registerComment() {
+        var attrs = ['id', 'pos'];
+        firepad.registerEntity('comment', {
+          render: function(info) {
+            var attrs = ['id', 'pos'];
+            var html = '<link ';
+            for(var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              if (attr in info) {
+                html += ' data-' + attr + '="' + info[attr] + '"';
+              }
+            }
+            html += ">";
+            return html;
+          },
+          fromElement: function(element) {
+            var info = {};
+            for(var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              if (element.hasAttribute(attr)) {
+                info[attr] = element.getAttribute(attr);
+              }
+            }
+            return info;
+          }
+        });
+      }
       function showVersioning() {
         document.querySelector('.versioning').style.display = 'flex';
       }
@@ -312,7 +454,6 @@
       function closeVersioning() {
         document.querySelector('.versioning').style.display = 'none';
       }
-
     </script>
   </body>
 </html>
