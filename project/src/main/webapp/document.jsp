@@ -22,10 +22,11 @@
     <script type="module" src="./components/document/toolbar-component.js"></script>
     <script type="module" src="./components/document/share-component.js"></script>
     <script type="module" src="./components/document/versioning-component.js"></script>
+    <script type="module" src="./components/directory-component.js"></script>
     <script src="script.js"></script>
   </head>
 
-  <body onload="init(); getHash(); restrict(); initializeVersioning()">
+  <body onload="init(); getHash(); restrict(); initializeVersioning(); getDocuments();">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -43,6 +44,7 @@
       </div>
     </div>
     <div class="toolbar">
+      <button onclick="showDirectory()">Directory</button>
       <toolbar-component onclick="changeTheme()"></toolbar-component>
       <button class="version-btn" onclick="showVersioning()">Versioning</button>
     </div>
@@ -158,7 +160,7 @@
         return false;
       }
 
-      //Downloads current doument
+      // Downloads current doument
       function download() {
         var text = firepad.getText();
 
@@ -232,6 +234,25 @@
         commits.unshift(value);
         document.querySelector('versioning-component').commits = commits;
         document.querySelector('versioning-component').requestUpdate();
+      }
+
+      // Render documents in the same
+      function getDocuments() {
+        fetch('/Folder?folderID=' + '<%= document.getFolderID() %>').then((response) => response.json()).then((documentsData) => {
+          let documents = [];
+          try {
+            documents = JSON.parse(documentsData.documents);
+          } catch(err) {
+            documents = JSON.parse(JSON.stringify(documentsData.documents));
+          }
+          document.querySelector('directory-component').documents = documents;
+          document.querySelector('directory-component').folderName= documentsData.folderName;
+          document.querySelector('directory-component').docHash = '<%= document.getHash() %>';
+        });
+      } 
+      
+      function showDirectory() {
+        document.querySelector('directory-component').style.display = 'flex';
       }
 
     </script>
