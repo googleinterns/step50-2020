@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/javascript/javascript.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/mode/clike/clike.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/ayu-dark.css" />
@@ -21,6 +22,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
     <link rel="stylesheet" href="main.css" />
     <script type="module" src="./components/toolbar-component.js"></script>
+    <script type="module" src="./components/share-component.js"></script>
+    <script src="closebrackets.js"></script>
+    <script src="matchbrackets.js"></script>
+    <script type="module" src="./components/comment-component.js"></script>
     <script src="script.js"></script>
     <style>
       html {
@@ -75,6 +80,68 @@
       .comment {
         background-color: yellow;
       }
+      
+      .permissions {
+          position: absolute;
+          right : 60px;
+          top : 84px;
+      }
+
+      .versioning {
+        display: none;
+        background-color: white;
+        z-index: 1;
+        width: 300px;
+        height: 660px;
+        position: absolute;
+        right: 10px;
+        border: solid;
+        border-color: grey;
+      }
+
+      .verion-btn {
+        left: 110px;
+        top: 55px;
+        position: absolute;
+      }
+
+      .close {
+        position: absolute;
+        top: 25px;
+        right: 11px;
+      }
+
+      .versionHeader {
+        border-bottom-color: grey;
+        border-bottom: solid;
+        height: 75px;
+        width: 300px;
+        padding-top: 23px;
+        padding-left: 20px;
+        font-size: 18px;
+      }
+
+      .commitMessage {
+        position : absolute;
+        right: 4px;
+        top: 550px;
+      }
+
+      .commitButton {
+        position : absolute;
+        top: 600px;
+        right : 4px;
+      }
+
+      .revisions {
+        border-color: grey;
+      }
+
+      .commits {
+        right : 76px;
+        top : 23px;
+        position : absolute;
+      }
     </style>
   </head>
 
@@ -98,6 +165,7 @@
     </div>
     <div class="toolbar">
       <toolbar-component onclick="changeTheme()"></toolbar-component>
+      <button class="verion-btn" onclick="showVersioning()">Versioning</button>
     </div>
     <div class="modal full-width full-height" id="share-modal">
       <div class="modal-background"></div>
@@ -110,6 +178,7 @@
           <form id="share-form" onsubmit="return share()">
             <label for="email">Share with email:</label>
             <input type="email" id="email" name="email"> 
+            <share-component></share-component>
             <input type="submit">
             <input type="hidden" id="documentHash" name="documentHash" value="<%= (String)request.getAttribute("documentHash") %>">
             <p style="color: red" id="share-response"></p>
@@ -117,20 +186,43 @@
         </section>
       </div>
     </div>
+    <div class="versioning" id="versioning-block">
+      <div class="close">
+        <button class="delete" onclick="closeVersioning()"></button>
+      </div>
+      <div class="versionHeader">
+        <div class="revisions">
+          <button class="text-btn" id="revisions-button"> Revisions </button>
+        </div>
+        <div class="commits">
+          <button class="text-btn" id="commits-button"> Commits </button>
+        </div>
+      </div>
+      <div class="commitButton three-width">
+        <button class="primary-blue-btn three-width" id="commit-button"> Commit </button>
+      </div>
+      <div class="commitMessage three-width">
+        <input class="white-input three-width" placeholder="Type a commit message..." id="commit-msg"></input>
+      </div>
+    </div>
     <div id="firepad-container"></div>
+    
 
     <script>
       //Map holding file types of different languages
       var extDict = {
         "Python": "py",
         "Javascript": "js",
-        "Java": "java",
-        "C++": "cpp",
+        "text/x-java": "java",
+        "text/x-c++src": "cpp",
         "Go": "go"
       };
 
       var codeMirror = CodeMirror(document.getElementById("firepad-container"), {
         lineNumbers: true,
+        matchBrackets: true,
+        indentWithTabs: true,
+        autoCloseBrackets: true,
         mode: "<%= document.getLanguage().toLowerCase() %>",
         theme: "neo",
       })
@@ -160,6 +252,15 @@
         firepad = Firepad.fromCodeMirror(firepadRef, codeMirror)
 
         registerComment();
+      }
+
+      function restrict() {
+        <%if (document.getViewerIDs().contains(user.getUserID())) {
+                %>
+                  document.getElementById("firepad-container").style.pointerEvents = "none";
+                  document.getElementById("share_btn").style.visibility = "hidden";
+                <%
+            }%>
       }
 
       function changeTheme() {
@@ -211,6 +312,7 @@
         a.download = '<%= document.getName() %>' + "." + extDict["<%= document.getLanguage() %>"];
         a.click();
       }
+
 
       //Create comment
       function comment() {
@@ -344,6 +446,13 @@
             return info;
           }
         });
+      }
+      function showVersioning() {
+        document.querySelector('.versioning').style.display = 'flex';
+      }
+
+      function closeVersioning() {
+        document.querySelector('.versioning').style.display = 'none';
       }
     </script>
   </body>

@@ -23,9 +23,10 @@ public class SharingServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     String email = request.getParameter("email");
     String hash = request.getParameter("documentHash");
+    String permissions = request.getParameter("permissions");
     PrintWriter out = response.getWriter();
 
-    if(Database.shareDocument(hash, email)) {
+    if(Database.shareDocument(hash, email, permissions)) {
       out.println("Document shared with " + email);
     } else {
       out.println("User specified does not exist, invitation email has been sent");

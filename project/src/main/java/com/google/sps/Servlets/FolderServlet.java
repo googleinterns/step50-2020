@@ -4,8 +4,8 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.*;
 import com.google.sps.models.Database;
-import com.google.sps.models.User;
 import com.google.sps.models.Folder;
+import com.google.sps.models.User;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -17,22 +17,21 @@ import javax.servlet.http.HttpServletResponse;
 
 /*
   Called by the user-home.html page.
-  Creates document in the left nav-panel and
-  renders them in the right docs-component
+  GET request returns folder's documents if folderID is provided, 
+  else returns list of folders.
+  POST request creates folder.
 */
-@WebServlet("/UserHome")
-public class UserHomeServlet extends HttpServlet {
+@WebServlet("/Folder")
+public class FolderServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     long userID = (long) request.getSession(false).getAttribute("userID");
-    User user = Database.getUserByID(userID);
-  
-    HashMap<String, Object> documentsData = new HashMap<String, Object>();
-    documentsData.put("nickname", user.getNickname());
-    documentsData.put("email", user.getEmail());
-    documentsData.put("documents", Database.getUsersDocuments(userID));
+    ArrayList<Folder> folders = Database.getUsersFolders(userID);
+    HashMap<String, Object> foldersData = new HashMap<String, Object>();
+    foldersData.put("defaultFolderID", Folder.DEFAULT_FOLDER_ID);
+    foldersData.put("folders", folders);
     response.setContentType("application/json;");
-    response.getWriter().println(convertToJson(documentsData));
+    response.getWriter().println(convertToJson(foldersData));
   }
 
   // Accepts any Java Object, where each {key: value}
@@ -45,22 +44,8 @@ public class UserHomeServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String name = request.getParameter("title");
-    String language = request.getParameter("language");
-    String docHash = request.getParameter("docHash");
+    String name = request.getParameter("folderName");
     long userID = (long) request.getSession(false).getAttribute("userID");
-    Database.createDocument(name, language, docHash, userID);
-    String folderID = request.getParameter("folderID");
-    if (isValidFolderID(folderID)) {
-      Database.addDocumentToFolder(docHash, Long.parseLong(folderID));
-    }
-    response.sendRedirect("/Document?documentHash=" + docHash);
-  }
-
-  private boolean isValidFolderID(String folderID) {
-    return folderID != null 
-      && !folderID.equals("undefined") 
-      && folderID.length() > 0
-      && Long.parseLong(folderID) != Folder.DEFAULT_FOLDER_ID;
+    Database.createFolder(name, userID);
   }
 }

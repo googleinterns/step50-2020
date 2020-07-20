@@ -22,6 +22,7 @@ export class DropdownElement extends LitElement {
       label: {type: String},
       value: {type: String},
       changeLabel: {type: Boolean},
+      hideOnSelect: {type: Boolean},
       showDropdown: {type: String},
       styling: {type: String},
     };
@@ -34,8 +35,11 @@ export class DropdownElement extends LitElement {
     this.label = '';
     this.value = '';
     this.changeLabel = true;
+    this.hideOnSelect = true;
     this.showDropdown = false;
     this.styling = '';
+    this.hideIcon = 'fa fa-angle-down';
+    this.showIcon = 'fa fa-angle-down';
   }
 
   // Remove shadow DOM so styles are inherited
@@ -47,9 +51,11 @@ export class DropdownElement extends LitElement {
     this.showDropdown = !this.showDropdown;
   }
 
-  togglevalue(item) {
+  toggleValue(item) {
     this.value = item;
-    this.toggleDropdown();
+    if (this.hideOnSelect) {
+      this.toggleDropdown();
+    }
     this.createChangeEvent();
   }
 
@@ -57,8 +63,18 @@ export class DropdownElement extends LitElement {
     let event = new Event('change');
     this.dispatchEvent(event);
   }
-  
 
+  createDropdownList() {
+    return this.options.map((option) => 
+      html`
+        <a href="#" 
+          @click=${() => this.toggleValue(option)} 
+          class="dropdown-item"> 
+          ${option} 
+        </a>
+      `)
+  }
+  
   render() {
     let dropdownState = this.showDropdown ? 'is-active' : '';
     let dropdownLabel = 
@@ -73,20 +89,15 @@ export class DropdownElement extends LitElement {
               aria-haspopup="true" aria-controls="dropdown-menu">
               <span>${dropdownLabel}</span>
               <span class="icon is-small">
-                <i class="fa fa-angle-down" aria-hidden="true"></i>
+                <i class=${this.showDropdown ? this.showIcon : this.hideIcon} 
+                  aria-hidden="true"></i>
               </span>
             </button>
           </div>
           <div class="${'dropdown-menu ' + this.styling}" 
             id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-              ${this.options.map((option) => html`
-                  <a href="#" 
-                    @click=${() => this.togglevalue(option)} 
-                    class="dropdown-item"> 
-                    ${option} 
-                  </a>
-                `)}
+              ${this.createDropdownList()}
             </div>
           </div>
         </div>
