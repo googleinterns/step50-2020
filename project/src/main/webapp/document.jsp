@@ -27,20 +27,11 @@
     <script src="matchbrackets.js"></script>
     <script type="module" src="./components/comment-component.js"></script>
     <script type="module" src="./components/document/versioning-component.js"></script>
-<<<<<<< HEAD
-    <script type="module" src="./components/comment-component.js"></script>
-=======
-    <script type="module" src="./components/directory-component.js"></script>
->>>>>>> Create directory-component
-    <script src="script.js"></script>
     <script type="module" src="./components/document/directory-component.js"></script>
+    <script src="script.js"></script>
   </head>
 
-<<<<<<< HEAD
   <body onload="init(); getHash(); restrict(); initVersioning(); initDirectory(); setTimeout(function(){ loadComments() }, 2000)">
-=======
-  <body onload="init(); getHash(); restrict(); initializeVersioning(); getDocuments();">
->>>>>>> Create directory-component
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -58,11 +49,7 @@
       </div>
     </div>
     <div class="toolbar">
-<<<<<<< HEAD
       <button onclick="toggleElement('directory-component')">Directory</button>
-=======
-      <button onclick="showDirectory()">Directory</button>
->>>>>>> Create directory-component
       <toolbar-component onclick="changeTheme()"></toolbar-component>
       <button class="version-btn" onclick="toggleElement('versioning-component')">Versioning</button>
     </div>
@@ -418,11 +405,8 @@
       }
 
       // Render documents in the same
-<<<<<<< HEAD
+
       function initDirectory() {
-=======
-      function getDocuments() {
->>>>>>> Create directory-component
         fetch('/Folder?folderID=' + '<%= document.getFolderID() %>').then((response) => response.json()).then((documentsData) => {
           let documents = [];
           try {
@@ -435,14 +419,7 @@
           document.querySelector('directory-component').docHash = '<%= document.getHash() %>';
         });
       } 
-<<<<<<< HEAD
-=======
       
-      function showDirectory() {
-        document.querySelector('directory-component').style.display = 'flex';
-      }
->>>>>>> Create directory-component
-
     </script>
   </body>
 </html>
