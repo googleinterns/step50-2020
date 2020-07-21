@@ -16,6 +16,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.ServletException;
 
+import java.util.stream.Collectors;
+
+
 @WebServlet("/Share")
 @MultipartConfig
 public class SharingServlet extends HttpServlet {

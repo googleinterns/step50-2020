@@ -32,27 +32,6 @@ export class CommentComponent extends LitElement {
     }).format(new Date());
   }
 
-  subComment() {
-      var formDate = document.getElementById("comment-date").value;
-      var formData = document.getElementById("comment-data").value;
-      var xhttp = new XMLHttpRequest();
-      var startPos = codeMirror.getCursor(true);
-      var endPos = codeMirror.getCursor(false);
-      endPos.ch += 1;
-      xhttp.open("POST", "/Comment", true);
-      xhttp.onreadystatechange = function() {
-        if(xhttp.readyState == 4 && xhttp.status == 200) {
-          codeMirror.setCursor(startPos);
-          firepad.insertEntity('comment', { id: this.responseText, pos: "start" });
-          codeMirror.setCursor(endPos);
-          firepad.insertEntity('comment', { id: this.responseText, pos: "end" });
-          loadComments();         
-        }
-      }
-      xhttp.send("commentData=" + formData + "&commentDate=" + formDate);
-      return false;
-  }
-
   render() {
     return html` 
       <form class="comment-group" id="comment-form" onsubmit="return subComment()">

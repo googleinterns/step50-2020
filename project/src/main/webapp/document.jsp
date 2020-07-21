@@ -347,6 +347,7 @@
       }
 
       function subComment() {
+        console.log("doc");
         var formData = new FormData(document.getElementById("comment-form"));
         var xhttp = new XMLHttpRequest();
         var startPos = codeMirror.getCursor(true);
