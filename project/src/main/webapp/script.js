@@ -4,7 +4,10 @@ function showElement(id) {
   if (element === null) {
     element = document.getElementById(id);
   }
-  element.className += ' is-active';
+  if (element.className.length > 0) {
+    element.className += ' ';
+  }
+  element.className += 'is-active';
 }
 
 function hideElement(id) {
