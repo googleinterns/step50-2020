@@ -44,9 +44,9 @@
       </div>
     </div>
     <div class="toolbar">
-      <button onclick="showElement('directory-component')">Directory</button>
+      <button onclick="toggleElement('directory-component')">Directory</button>
       <toolbar-component onclick="changeTheme()"></toolbar-component>
-      <button class="version-btn" onclick="showElement('versioning-component')">Versioning</button>
+      <button class="version-btn" onclick="toggleElement('versioning-component')">Versioning</button>
     </div>
     <div class="modal full-width full-height" id="share-modal">
       <div class="modal-background"></div>

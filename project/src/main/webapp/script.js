@@ -14,3 +14,15 @@ function hideElement(id) {
   }
   element.className = element.className.replace('is-active', '');
 }
+
+function toggleElement(id) {
+  let element = document.querySelector(id);
+  if (element === null) {
+    element = document.getElementById(id);
+  }
+  if (element.className.includes('is-active')) {
+    hideElement(id);
+  } else {
+    showElement(id);
+  }
+}

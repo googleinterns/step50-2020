@@ -46,9 +46,22 @@
 directory-component
   display: none
   width: 10%
+  height: 100%
   z-index: 1
   position: absolute
   left: 0
+  background-color: $white
+  border: 3px solid $light-gray
+  border-top: none
+  .directory
+    padding: 15px
+    .directory-header
+      display: flex
+      flex-direction: row  
+      img
+        width: 30px
+        height: 23px
+        margin-right: 10px
 
 #firepad-container 
   width: 70%
@@ -64,7 +77,7 @@ versioning-component
   height: 100%
   position: absolute
   right: 0
-  border: 2px solid $light-gray
+  border: 3px solid $light-gray
   border-top: none
   flex-direction: column
   .close
