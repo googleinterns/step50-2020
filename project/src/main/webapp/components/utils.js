@@ -14,8 +14,8 @@ export function convertMillisToTimestamp(millis) {
 }
 
 // Source: Firepad firebase-adapter.js
+const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 export function revisionToId(revision) {
-  const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   if (revision === 0) {
     return 'A0';
   }
@@ -34,7 +34,6 @@ export function revisionToId(revision) {
 }
 
 export function revisionFromId(revisionId) {
-  const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   if (revisionId.length > 0 && revisionId[0] === characters[revisionId.length + 8]) {
     var revision = 0;
     for(var i = 1; i < revisionId.length; i++) {
