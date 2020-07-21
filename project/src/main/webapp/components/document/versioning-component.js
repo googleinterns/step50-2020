@@ -30,12 +30,12 @@ export class VersioningComponent extends LitElement {
     return this;
   }
 
-  closeVersioning(hasReverted) {
+  close(hasReverted) {
     codeMirror.options.readOnly = false;
-    document.getElementById('versioning').style.display = 'none';
-    // Do not trigger init() in document.jsp otherwise firepad will save a blank pad
-    if (!hasReverted) {
+    if (hasReverted) {
       this.dispatchEvent(new CustomEvent('close'));
+    } else {
+      this.dispatchEvent(new CustomEvent('temp'));
     }
   }
 
@@ -81,7 +81,7 @@ export class VersioningComponent extends LitElement {
       firepad.setText(documentSnapshot);
     }
     if (close) {
-      this.closeVersioning(true);
+      this.close(true);
     }
   }
 
@@ -261,13 +261,13 @@ export class VersioningComponent extends LitElement {
 
   render() {
     return html`
-      <div class="versioning full-height" id="versioning">
+      <div class="full-height" id="versioning">
         <div class="versioning-header full-width">
           <div class="versioning-header-toggle">
             <button class="bold-btn" id="revisions" @click=${() => this.lockBtn('revisions')}> Revisions </button>
             <button class="bold-btn" id="commits" @click=${() => this.lockBtn('commits')}> Commits </button>
           </div>
-          <button class="close delete" @click="${() => this.closeVersioning(false)}"></button>
+          <button class="close delete" @click="${() => this.close(false)}"></button>
         </div>
         ${this.show === 'revisions' ? this.showRevisions() : this.showCommits() }  
         </div>
