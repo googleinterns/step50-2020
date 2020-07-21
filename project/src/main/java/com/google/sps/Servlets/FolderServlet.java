@@ -37,15 +37,17 @@ public class FolderServlet extends HttpServlet {
       response.getWriter().println(convertToJson(foldersData));
     } else {
       long folderID = Long.parseLong(folderIDString);
-      User user = Database.getUserByID(userID);
-      Folder folder = Database.getFolderByID(folderID);
-      String documentsJSON = convertToJson(Database.getFoldersDocuments(folderID));
-      HashMap<String, Object> documentsData = new HashMap<String, Object>();
-      documentsData.put("folderID", folderID);
-      documentsData.put("folderName", folder.getName());
-      documentsData.put("documents", documentsJSON);
-      response.setContentType("application/json;");
-      response.getWriter().println(convertToJson(documentsData));
+      if (folderID != Folder.DEFAULT_FOLDER_ID) {
+        User user = Database.getUserByID(userID);
+        Folder folder = Database.getFolderByID(folderID);
+        String documentsJSON = convertToJson(Database.getFoldersDocuments(folderID));
+        HashMap<String, Object> documentsData = new HashMap<String, Object>();
+        documentsData.put("folderID", folderID);
+        documentsData.put("folderName", folder.getName());
+        documentsData.put("documents", documentsJSON);
+        response.setContentType("application/json;");
+        response.getWriter().println(convertToJson(documentsData));
+      }
     }
   }
 
