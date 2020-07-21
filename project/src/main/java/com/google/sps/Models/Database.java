@@ -106,7 +106,7 @@ public class Database {
 
     String data = (String) commentEntity.getProperty("data");
     long userID = (Long) commentEntity.getProperty("userID");
-    Date date = (Date) commentEntity.getProperty("date");
+    String date = (String) commentEntity.getProperty("date");
 
     return new Comment(commentID, userID, data, date);
   }
@@ -126,7 +126,7 @@ public class Database {
     return new User(email, nickname, userID, docHashes, folderIDs);
   }
 
-  public static long createComment(long userID, String data, Date date) {
+  public static long createComment(long userID, String data, String date) {
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("userID", userID);
     commentEntity.setProperty("data", data);

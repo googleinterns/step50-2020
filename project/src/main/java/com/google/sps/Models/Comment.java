@@ -18,10 +18,9 @@ import java.util.Date;
 
 public class Comment {
   long commentID, userID;
-  String data;
-  Date date;
+  String data, date;
 
-  Comment(long commentID, long userID, String data, Date date) {
+  Comment(long commentID, long userID, String data, String date) {
     this.commentID = commentID;
     this.userID = userID;
     this.data = data;
@@ -40,7 +39,7 @@ public class Comment {
     return data;
   }
 
-  public Date getDate() {
+  public String getDate() {
     return date;
   }
 }

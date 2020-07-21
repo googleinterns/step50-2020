@@ -39,7 +39,7 @@
       /* Height / width / positioning can be customized for your use case.
           For demo purposes, we make firepad fill the entire browser. */
       #firepad-container {
-        width: 100%;
+        width: 70%;
         height: 100%;
       }
 
@@ -142,6 +142,11 @@
         top : 23px;
         position : absolute;
       }
+
+      .comment-container {
+        position: absolute;
+        right: 240px;
+      }
     </style>
   </head>
 
@@ -205,6 +210,7 @@
         <input class="white-input three-width" placeholder="Type a commit message..." id="commit-msg"></input>
       </div>
     </div>
+    <div id="comment-container" class="comment-container"></div>
     <div id="firepad-container"></div>
     
 
@@ -316,14 +322,6 @@
 
       //Create comment
       function comment() {
-        var formattedDate = new Intl.DateTimeFormat('en-US', {
-          month: 'long',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric'
-        }).format(new Date());
-        console.log("<%= user.getNickname() %>, " + formattedDate);
-
         var startPos = codeMirror.getCursor(true);
         var endPos = codeMirror.getCursor(false);
         endPos.ch += 1;
@@ -342,8 +340,19 @@
           }
         }
 
-        // Create comment in database
-        xhttp.open("GET", "/Comment?" + "data=" + /* Comment text */ + "date=" /* Date & time */+ , true);
+        document.getElementById('comment-container').innerHTML += '<comment-component name="<%= user.getNickname() %>"></comment-component>';
+
+        document.querySelector('comment-component').firepad = firepad;
+        document.querySelector('comment-component').codeMirror = codeMirror;
+      }
+
+      function subComment() {
+        var formData = new FormData(document.getElementById("comment-form"));
+        var xhttp = new XMLHttpRequest();
+        var startPos = codeMirror.getCursor(true);
+        var endPos = codeMirror.getCursor(false);
+        endPos.ch += 1;
+        xhttp.open("POST", "/Comment", true);
         xhttp.onreadystatechange = function() {
           if(xhttp.readyState == 4 && xhttp.status == 200) {
             codeMirror.setCursor(startPos);
@@ -353,7 +362,8 @@
             loadComments();         
           }
         }
-        xhttp.send();
+        xhttp.send(formData);
+        return false;
       }
 
       // Generate front end for commenting

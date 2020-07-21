@@ -3,17 +3,19 @@ import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-eleme
 export class CommentComponent extends LitElement {
   static get properties() {
     return {
+      firepad: {type: Object},
+      codeMirror: {type: Object},
       placeholder : {type: String},
       name : {type: String},
-      time : {type: String}
+      date : {type: String}
     };
   }
 
   constructor() {
     super();
-    this.placeholder = 'Write comment...';
+    this.placeholder = 'Write a comment...';
     this.name ='';
-    this.time = '';
+    this.date = '';
   }
 
   // Remove shadow DOM so styles are inherited
@@ -21,31 +23,56 @@ export class CommentComponent extends LitElement {
     return this;
   }
 
-  getServletData() {
-    fetch('/UserHome').then((response) => response.json()).then((documentsData) => { 
-      var date = new Date().toJSON().slice(0,10);
-      var time = new Date().toJSON().slice(11,19)
-      this.time = date + ' ' + time;
-      this.name = documentsData.nickname;
-    });
+  makeDate() {
+    this.date = new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric'
+    }).format(new Date());
+  }
+
+  subComment() {
+      var formDate = document.getElementById("comment-date").value;
+      var formData = document.getElementById("comment-data").value;
+      var xhttp = new XMLHttpRequest();
+      var startPos = codeMirror.getCursor(true);
+      var endPos = codeMirror.getCursor(false);
+      endPos.ch += 1;
+      xhttp.open("POST", "/Comment", true);
+      xhttp.onreadystatechange = function() {
+        if(xhttp.readyState == 4 && xhttp.status == 200) {
+          codeMirror.setCursor(startPos);
+          firepad.insertEntity('comment', { id: this.responseText, pos: "start" });
+          codeMirror.setCursor(endPos);
+          firepad.insertEntity('comment', { id: this.responseText, pos: "end" });
+          loadComments();         
+        }
+      }
+      xhttp.send("commentData=" + formData + "&commentDate=" + formDate);
+      return false;
   }
 
   render() {
     return html` 
-      <div class="comment-div">
-        ${this.getServletData()}
-        <p class="comment-name">${this.name}</p>
-        <p class="comment-time">${this.time}</p>
-        <div class="comment-delete">
-          <button class="delete"></button>
+      <form class="comment-group" id="comment-form" onsubmit="return subComment()">
+        <div class="comment-div">
+        ${this.makeDate()}
+          <p class="comment-name">${this.name}</p>
+          <p class="comment-date">${this.date}</p>
+          <input type="hidden" id="commentDate" name="commentDate" value="${this.date}">
+          <div class="comment-delete">
+            <button class="delete"></button>
+          </div>
+          <input type="textarea"
+            name="commentData" id="commentData"
+            class="comment-txt"
+            placeholder=${this.placeholder}
+            autocomplete="off" 
+          ></input>
+          <input type="submit">Submit</input>
         </div>
-        <textarea 
-          name="comment" id="comment-doc"
-          class="comment-txt"
-          placeholder=${this.placeholder}
-          autocomplete="off" 
-        ></textarea>
-      </div>
+      </form>
     `;
   }
 }
