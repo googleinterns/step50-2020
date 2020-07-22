@@ -7,7 +7,6 @@ public class Folder {
   long folderID;
   ArrayList<String> docHashes;
   ArrayList<Long> folderIDs;
-  ArrayList<Folder> folders;
   
   Folder(String name, long folderID, ArrayList<String> docHashes, ArrayList<Long> folderIDs) {
     this.name = name;
@@ -30,13 +29,5 @@ public class Folder {
 
   public ArrayList<Long> getFolderIDs() {
     return folderIDs;
-  }
-
-  public void setFolders(ArrayList<Folder> folders) {
-    this.folders = folders;
-  }
-
-  public ArrayList<Folder> getFolders() {
-    return folders;
   }
 }

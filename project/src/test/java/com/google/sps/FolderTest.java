@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 @RunWith(JUnit4.class)
 public final class FolderTest {
@@ -123,14 +124,20 @@ public final class FolderTest {
   }
 
   @Test
-  public void testGetFoldersFolders() {
+  public void testGetFoldersMap() {
     User user = Database.logInUser(USER_EMAIL_A, USER_NICKNAME_A);
     Folder folderA = Database.createFolder(FOLDER_A, user.getUserID(), user.getDefaultFolderID());
     Folder folderB = Database.createFolder(FOLDER_B, user.getUserID(), folderA.getFolderID());
-    Folder defaultFolder = Database.getFoldersFolders(user.getDefaultFolderID());
-    Folder childFolderA = defaultFolder.getFolders().get(0);
-    Folder childFolderB = childFolderA.getFolders().get(0);
-    Assert.assertEquals(folderA.getName(), childFolderA.getName());
-    Assert.assertEquals(folderB.getName(), childFolderB.getName());
+    folderA = Database.getFolderByID(folderA.getFolderID());
+    
+    HashMap<Long, Folder> foldersMap = Database.getFoldersMap(user.getDefaultFolderID());
+    Folder defaultFolder = Database.getFolderByID(user.getDefaultFolderID());
+    Folder childDefaultFolder = foldersMap.get(defaultFolder.getFolderID());
+    Folder childFolderA = foldersMap.get(folderA.getFolderID());
+    Folder childFolderB = foldersMap.get(folderB.getFolderID());
+    Assert.assertEquals(defaultFolder.getFolderIDs(), childDefaultFolder.getFolderIDs());
+    Assert.assertEquals(folderA.getFolderIDs(), childFolderA.getFolderIDs());
+    Assert.assertEquals(folderB.getFolderIDs(), childFolderB.getFolderIDs());
+    
   }
 }

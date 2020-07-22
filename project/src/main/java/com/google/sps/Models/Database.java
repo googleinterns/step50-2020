@@ -33,6 +33,7 @@ import com.google.gson.*;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Date;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -354,7 +355,7 @@ public class Database {
   }
 
   public static void moveDocumentToFolder(String docHash, long folderID) {
-    long oldFolderID = changeDocumentFolder(docHash, folderID);
+    long oldFolderID = setDocumentsFolder(docHash, folderID);
     removeDocumentFromFolder(docHash, oldFolderID);
     Query query = new Query("Folder").addFilter(
       "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
@@ -374,7 +375,7 @@ public class Database {
     getDatastore().put(folderEntity);
   }
   
-  private static long changeDocumentFolder(String docHash, long folderID) {
+  private static long setDocumentsFolder(String docHash, long folderID) {
     Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, docHash);
     Entity docEntity = getDatastore().prepare(query).asSingleEntity();
     long oldFolderID = (long) docEntity.getProperty("folderID");
@@ -389,15 +390,19 @@ public class Database {
     return getDocumentsByHash(docHashes);
   }
 
-  public static Folder getFoldersFolders(long parentFolderID) {
-    Folder folder = getFolderByID(parentFolderID);
-    ArrayList<Long> folderIDs = folder.getFolderIDs();
-    ArrayList<Folder> folders = new ArrayList<Folder>();
+  public static HashMap<Long, Folder> getFoldersMap(long parentFolderID) {
+    HashMap<Long, Folder> foldersMap = new HashMap<Long, Folder>();
+    getFoldersMap(parentFolderID, foldersMap);
+    return foldersMap;
+  }
+
+  private static void getFoldersMap(long parentFolderID, HashMap<Long, Folder> map) {
+    Folder parentFolder = getFolderByID(parentFolderID);
+    ArrayList<Long> folderIDs = parentFolder.getFolderIDs();
     for (long folderID : folderIDs) {
-      folders.add(getFoldersFolders(folderID));
+      getFoldersMap(folderID, map);
     }
-    folder.setFolders(folders);
-    return folder;
+    map.put(parentFolderID, parentFolder);
   }
 
   // Datastore does not support empty collections (it will be stored as null)
