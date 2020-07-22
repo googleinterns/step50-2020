@@ -412,7 +412,13 @@ public class Database {
   // Returns an ArrayList of a Document's Comments
   public static ArrayList<Comment> getDocumentComments(String hash) {
     Document document = getDocumentByHash(hash);
-    ArrayList<Long> commentIDs = document.getCommentIDs();
+    ArrayList<Long> commentIDs;
+    if(document.getCommentIDs() != null) {
+      commentIDs = document.getCommentIDs();
+    } else {
+      return new ArrayList<Comment>();
+    }        
+
     ArrayList<Comment> commentObjects = new ArrayList<Comment>();
     for(Long c: commentIDs) {
       commentObjects.add(getCommentbyID(c));

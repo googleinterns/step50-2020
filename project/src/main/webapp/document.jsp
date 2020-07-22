@@ -290,15 +290,17 @@
         }
 
         // Load comments themselves
+        var hash = "<%= (String)request.getAttribute("documentHash") %>"
         var xhttp = new XMLHttpRequest();
-        xhttp.open("GET", "/Comment", true);
+        xhttp.open("GET", "/Comment?documentHash=" + hash, true);
         xhttp.onreadystatechange = function() {
           if(xhttp.readyState == 4 && xhttp.status == 200) {
             //get JSON and loop through to create comment componenets
-            var commentList = this.responseText;
+            var commentList = JSON.parse(this.responseText);
+            console.log(commentList);
             for(var i = 0; i < commentList.length; i++) {
               var comment = commentList[i];
-              document.getElementById('comment-container').innerHTML += '<comment-component name="'+ comment[userID] +'" date="' + comment[commentDate] + '" text="'+ comment[commentData] +'"></comment-component>';
+              document.getElementById('comment-container').innerHTML += '<comment-component name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
               document.querySelector('comment-component').firepad = firepad;
               document.querySelector('comment-component').codeMirror = codeMirror;
             }
