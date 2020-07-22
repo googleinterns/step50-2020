@@ -398,6 +398,7 @@ public class Database {
 
   private static void getFoldersMap(long parentFolderID, HashMap<Long, Folder> map) {
     Folder parentFolder = getFolderByID(parentFolderID);
+    parentFolder.setDocs(getFoldersDocuments(parentFolderID));
     ArrayList<Long> folderIDs = parentFolder.getFolderIDs();
     for (long folderID : folderIDs) {
       getFoldersMap(folderID, map);
