@@ -55,8 +55,8 @@ public class Database {
 
     if(userEntity != null) {
       ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
-      ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
-      return new User(email, nickname, userEntity.getKey().getId(), docHashes, folderIDs);
+      long defaultFolderID = (long) userEntity.getProperty("defaultFolderID");
+      return new User(email, nickname, userEntity.getKey().getId(), docHashes, defaultFolderID);
     } else {
       return createUser(email, nickname);
     }
@@ -73,9 +73,9 @@ public class Database {
     String nickname = (String) userEntity.getProperty("nickname");
     long userID = userEntity.getKey().getId();
     ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
-    ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
+    long defaultFolderID = (long) userEntity.getProperty("defaultFolderID");
 
-    return new User(email, nickname, userID, docHashes, folderIDs);
+    return new User(email, nickname, userID, docHashes, defaultFolderID);
   }
 
   public static User getUserByID(long userID) {
@@ -90,9 +90,9 @@ public class Database {
     String email = (String) userEntity.getProperty("email");
     String nickname = (String) userEntity.getProperty("nickname");
     ArrayList<String> docHashes = getListProperty(userEntity, "docHashes");
-    ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
+    long defaultFolderID = (long) userEntity.getProperty("defaultFolderID");
 
-    return new User(email, nickname, userID, docHashes, folderIDs);
+    return new User(email, nickname, userID, docHashes, defaultFolderID);
   }
 
   public static Comment getCommentbyID(long commentID) {
@@ -114,16 +114,19 @@ public class Database {
   private static User createUser(String email, String nickname) {
     Entity userEntity = new Entity("User");
     ArrayList<String> docHashes = new ArrayList<String>();
-    ArrayList<Long> folderIDs = new ArrayList<Long>();
-
+    
     userEntity.setProperty("email", email);
     userEntity.setProperty("nickname", nickname);
     userEntity.setProperty("docHashes", docHashes);
-    userEntity.setProperty("folderIDs", folderIDs);
     getDatastore().put(userEntity);
-    long userID = userEntity.getKey().getId();
 
-    return new User(email, nickname, userID, docHashes, folderIDs);
+    long userID = userEntity.getKey().getId();
+    Folder defaultFolder = createFolder("default", userID);
+    long defaultFolderID = defaultFolder.getFolderID();
+    userEntity.setProperty("defaultFolderID", defaultFolderID);
+    getDatastore().put(userEntity);
+    
+    return new User(email, nickname, userID, docHashes, defaultFolderID);
   }
 
   public static long createComment(long userID, String data, String date, String hash) {
@@ -161,7 +164,8 @@ public class Database {
       ArrayList<Long> editorIDs = new ArrayList<Long>();
       ArrayList<Long> viewerIDs = new ArrayList<Long>();
       ArrayList<Long> commentIDs = new ArrayList<Long>();
-      long folderID = Folder.DEFAULT_FOLDER_ID;
+      User user = getUserByID(ownerID);
+      long folderID = user.getDefaultFolderID();
       
       if(language.equals("C++")) {
           language = "text/x-c++src";
@@ -180,6 +184,7 @@ public class Database {
       getDatastore().put(docEntity);
 
       addDocumentForUser(hash, ownerID);
+      moveDocumentToFolder(hash, folderID);
       return new Document(name, language, hash, editorIDs, viewerIDs, commentIDs, ownerID, folderID);
   }
 
@@ -313,15 +318,19 @@ public class Database {
   public static Folder createFolder(String name, long userID) {
     Entity folderEntity = new Entity("Folder");
     ArrayList<String> docHashes = new ArrayList<String>();
-    ArrayList<Long> userIDs = new ArrayList<Long>();
-    userIDs.add(userID);
+    ArrayList<Long> folderIDs = new ArrayList<Long>();
     folderEntity.setProperty("name", name);
     folderEntity.setProperty("docHashes", docHashes);
-    folderEntity.setProperty("userIDs", userIDs);
+    folderEntity.setProperty("folderIDs", folderIDs);
     getDatastore().put(folderEntity);
     long folderID = folderEntity.getKey().getId();
-    addFolderForUser(userID, folderID);
-    return new Folder(name, folderID, docHashes, userIDs); 
+    return new Folder(name, folderID, docHashes, folderIDs); 
+  }
+
+  public static Folder createFolder(String name, long userID, long parentFolderID) {
+    Folder folder = createFolder(name, userID);
+    addFolderToFolder(folder.getFolderID(), parentFolderID);
+    return folder;
   }
 
   public static Folder getFolderByID(long folderID) {
@@ -330,34 +339,30 @@ public class Database {
     Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
     String name = (String) folderEntity.getProperty("name");
     ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
-    ArrayList<Long> userIDs = getListProperty(folderEntity, "userIDs");
-    return new Folder(name, folderID, docHashes, userIDs); 
+    ArrayList<Long> folderIDs = getListProperty(folderEntity, "folderIDs");
+    return new Folder(name, folderID, docHashes, folderIDs); 
   }
 
-  public static void addFolderForUser(long userID, long folderID) {
-    Query query = new Query("User").addFilter(
-        "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("User", userID));
-    Entity userEntity = getDatastore().prepare(query).asSingleEntity();
-    ArrayList<Long> folderIDs = getListProperty(userEntity, "folderIDs");
+  private static void addFolderToFolder(long folderID, long parentFolderID) {
+    Query query = new Query("Folder").addFilter(
+        "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", parentFolderID));
+    Entity parentFolderEntity = getDatastore().prepare(query).asSingleEntity();
+    ArrayList<Long> folderIDs = getListProperty(parentFolderEntity, "folderIDs");
     folderIDs.add(folderID);
-    userEntity.setProperty("folderIDs", folderIDs);
-    getDatastore().put(userEntity);
+    parentFolderEntity.setProperty("folderIDs", folderIDs);
+    getDatastore().put(parentFolderEntity);
   }
 
-  public static void addDocumentToFolder(String docHash, long folderID) {
+  public static void moveDocumentToFolder(String docHash, long folderID) {
     long oldFolderID = changeDocumentFolder(docHash, folderID);
-    if (oldFolderID != Folder.DEFAULT_FOLDER_ID) {
-      removeDocumentFromFolder(docHash, oldFolderID);
-    }
-    if (folderID != Folder.DEFAULT_FOLDER_ID) {
-      Query query = new Query("Folder").addFilter(
-        "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
-      Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
-      ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
-      docHashes.add(docHash);
-      folderEntity.setProperty("docHashes", docHashes);
-      getDatastore().put(folderEntity);
-    }
+    removeDocumentFromFolder(docHash, oldFolderID);
+    Query query = new Query("Folder").addFilter(
+      "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
+    Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
+    ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
+    docHashes.add(docHash);
+    folderEntity.setProperty("docHashes", docHashes);
+    getDatastore().put(folderEntity);
   }
 
   private static void removeDocumentFromFolder(String docHash, long folderID) {
@@ -377,25 +382,22 @@ public class Database {
     getDatastore().put(docEntity);
     return oldFolderID;
   }
-
-  public static ArrayList<Long> getUsersFolderIDs(long userID) {
-    User user = getUserByID(userID);
-    return user.getFolderIDs();
-  }
-
-  public static ArrayList<Folder> getUsersFolders(long userID) {
-    ArrayList<Long> folderIDs = getUsersFolderIDs(userID);
-    ArrayList<Folder> folders = new ArrayList<Folder>();
-    for (long folderID : folderIDs) {
-      folders.add(getFolderByID(folderID));
-    }
-    return folders;
-  }
   
   public static ArrayList<Document> getFoldersDocuments(long folderID) {
     Folder folder = getFolderByID(folderID);
     ArrayList<String> docHashes = folder.getDocHashes();
     return getDocumentsByHash(docHashes);
+  }
+
+  public static Folder getFoldersFolders(long parentFolderID) {
+    Folder folder = getFolderByID(parentFolderID);
+    ArrayList<Long> folderIDs = folder.getFolderIDs();
+    ArrayList<Folder> folders = new ArrayList<Folder>();
+    for (long folderID : folderIDs) {
+      folders.add(getFoldersFolders(folderID));
+    }
+    folder.setFolders(folders);
+    return folder;
   }
 
   // Datastore does not support empty collections (it will be stored as null)
