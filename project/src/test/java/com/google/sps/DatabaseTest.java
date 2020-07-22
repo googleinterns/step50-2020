@@ -110,7 +110,7 @@ public final class DatabaseTest {
     Query documentQuery = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
     Entity docEntity = ds.prepare(documentQuery).asSingleEntity();
     Assert.assertEquals(name, (String) docEntity.getProperty("name"));
-    Assert.assertEquals(language, (String) docEntity.getProperty("language"));
+    Assert.assertEquals("text/x-java", (String) docEntity.getProperty("language"));
 
     // Check that User Entity also contains new doc
     Query userQuery = new Query("User").addFilter("email", Query.FilterOperator.EQUAL, USER_EMAIL_A);
@@ -126,7 +126,7 @@ public final class DatabaseTest {
     Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, userA.getUserID());
     Document docA = Database.getDocumentByHash(DOC_HASH_A);
     Assert.assertEquals(DOC_NAME_A, docA.getName());
-    Assert.assertEquals(DOC_LANGUAGE_A, docA.getLanguage());
+    Assert.assertEquals("text/x-java", docA.getLanguage());
   }
 
   @Test
@@ -144,7 +144,7 @@ public final class DatabaseTest {
     ArrayList<Document> docs = Database.getUsersDocuments(userA.getUserID());
     Document docA = docs.get(0);
     Assert.assertEquals(DOC_NAME_A, docA.getName());
-    Assert.assertEquals(DOC_LANGUAGE_A, docA.getLanguage());
+    Assert.assertEquals("text/x-java", docA.getLanguage());
     Assert.assertEquals(DOC_HASH_A, docA.getHash());
     Assert.assertTrue(docs.size() == 1);
   }
