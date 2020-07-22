@@ -100,21 +100,18 @@
       var firepad;
 
       function init() {
-        //// Initialize Firebase.
-        if (firebase.apps.length === 0) {
-          var config = {
-            apiKey: 'AIzaSyDUYns7b2bTK3Go4dvT0slDcUchEtYlSWc',
-            authDomain: "step-collaborative-code-editor.firebaseapp.com",
-            databaseURL: "https://step-collaborative-code-editor.firebaseio.com"
-          };
-          firebase.initializeApp(config);
-        }
-        //// Get Firebase Database reference.
-        var firepadRef = getRef();
-        codeMirror.setValue('');
-        firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
-
-        registerComment();
+        fetch('./api-key.json')
+          .then(response => response.json())
+          .then(config => { 
+            if (firebase.apps.length === 0) {
+              firebase.initializeApp(config);
+            }
+            var firepadRef = getRef();
+            codeMirror.setValue('');
+            firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
+            initializeVersioning();
+            registerComment();
+          });
       }
 
       function restrict() {

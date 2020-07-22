@@ -33,15 +33,14 @@ export class NavPanel extends LitElement {
   }
 
   createDocument() {
-    let config = {
-      apiKey: 'AIzaSyDUYns7b2bTK3Go4dvT0slDcUchEtYlSWc',
-      authDomain: 'step-collaborative-code-editor.firebaseapp.com',
-      databaseURL: 'https://step-collaborative-code-editor.firebaseio.com'
-    };
-    if (firebase.apps.length === 0) {
-      firebase.initializeApp(config);
-    }
-    this.docHash= this.createDocHash();
+    fetch('.../api-key.json')
+      .then(response => response.json())
+      .then(config => { 
+        if (firebase.apps.length === 0) {
+          firebase.initializeApp(config);
+        }
+        this.docHash= this.createDocHash();
+      });
   }
 
   createDocHash() {
