@@ -130,7 +130,7 @@ public final class FolderTest {
     Folder folderB = Database.createFolder(FOLDER_B, user.getUserID(), folderA.getFolderID());
     folderA = Database.getFolderByID(folderA.getFolderID());
     Document doc = Database.createDocument(DOC_NAME_A, DOC_LANGUAGE_A, DOC_HASH_A, user.getUserID());
-    
+
     HashMap<Long, Folder> foldersMap = Database.getFoldersMap(user.getDefaultFolderID());
     Folder defaultFolder = Database.getFolderByID(user.getDefaultFolderID());
     Folder childDefaultFolder = foldersMap.get(defaultFolder.getFolderID());
@@ -139,7 +139,7 @@ public final class FolderTest {
     Assert.assertEquals(defaultFolder.getFolderIDs(), childDefaultFolder.getFolderIDs());
     Assert.assertEquals(folderA.getFolderIDs(), childFolderA.getFolderIDs());
     Assert.assertEquals(folderB.getFolderIDs(), childFolderB.getFolderIDs());
-    
+
     // Assert that the default folder object has the proper documents
     Assert.assertEquals(doc.getName(), childDefaultFolder.getDocs().get(0).getName());
   }

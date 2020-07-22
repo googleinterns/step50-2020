@@ -355,11 +355,7 @@ public class Database {
   }
 
   public static void moveDocumentToFolder(String docHash, long folderID) {
-<<<<<<< HEAD
     long oldFolderID = setDocumentsFolder(docHash, folderID);
-=======
-    long oldFolderID = changeDocumentFolder(docHash, folderID);
->>>>>>> Create initial folder nesting functions
     removeDocumentFromFolder(docHash, oldFolderID);
     Query query = new Query("Folder").addFilter(
       "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
@@ -394,7 +390,6 @@ public class Database {
     ArrayList<String> docHashes = folder.getDocHashes();
     return getDocumentsByHash(docHashes);
   }
-
 
   public static HashMap<Long, Folder> getFoldersMap(long parentFolderID) {
     HashMap<Long, Folder> foldersMap = new HashMap<Long, Folder>();
