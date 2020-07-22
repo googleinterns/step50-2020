@@ -397,11 +397,14 @@ public class Database {
     return getDocumentsByHash(docHashes);
   }
 
+<<<<<<< HEAD
   public static ArrayList<String> getFoldersDocHashes(long folderID) {
     Folder folder = getFolderByID(folderID);
     return folder.getDocHashes();
   }
 
+=======
+>>>>>>> Create getFoldersMap that returns nested folders as map
   public static HashMap<Long, Folder> getFoldersMap(long parentFolderID) {
     HashMap<Long, Folder> foldersMap = new HashMap<Long, Folder>();
     getFoldersMap(parentFolderID, foldersMap);
