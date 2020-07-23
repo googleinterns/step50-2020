@@ -47,8 +47,9 @@ export class DocsComponent extends LitElement {
   }
 
   render() {
-    console.log(this.documents);
-    console.log(this.subfolders);
+    if (this.folderID === this.defaultFolderID) {
+      this.subfolders = [];
+    }
     const empty = this.documents.length === 0 && this.subfolders.length === 0;
     return html`        
     <div>
@@ -67,18 +68,19 @@ export class DocsComponent extends LitElement {
           `
           :
           html`
-            <ul class="docs-list">
+            <ul class="folders-list">
               ${this.subfolders.map((folder) => 
                 html`
-                  <li>
-                    <div>
-                      <a @click=${() => this.toggleFolder(folder.name, folder.folderID)}>
-                        ${folder.name}
-                      </a>
-                    </div>
+                  <li @click=${() => this.toggleFolder(folder.name, folder.folderID)}>
+                    <img src="../assets/plain-folder.png" />
+                    <a>
+                      ${folder.name}
+                    </a>
                   </li>
               ` 
               )}
+            </ul>
+            <ul class="docs-list">
               ${this.documents.map((doc) => 
                 html`
                   <li>
