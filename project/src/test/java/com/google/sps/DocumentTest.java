@@ -30,7 +30,8 @@ public final class DocumentTest {
     userIDs.add(100000L);
     ArrayList<Long> editorIDs = new ArrayList<Long>();
     ArrayList<Long> viewerIDs = new ArrayList<Long>();
-    Document doc = new Document("new_doc", "python", "x6723hbS", editorIDs, viewerIDs, 100000L, Folder.DEFAULT_FOLDER_ID);
+    ArrayList<Long> commentIDs = new ArrayList<Long>();
+    Document doc = new Document("new_doc", "python", "x6723hbS", editorIDs, viewerIDs, commentIDs, 100000L, Folder.DEFAULT_FOLDER_ID);
 
     String name = doc.getName();
     Assert.assertEquals("new_doc", name);

@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/javascript/javascript.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/mode/clike/clike.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/ayu-dark.css" />
@@ -19,14 +21,17 @@
     <script src="https://firepad.io/releases/v1.5.9/firepad.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
     <link rel="stylesheet" href="main.css" />
-    <script type="module" src="./components/document/toolbar-component.js"></script>
-    <script type="module" src="./components/document/share-component.js"></script>
+    <script type="module" src="./components/toolbar-component.js"></script>
+    <script type="module" src="./components/share-component.js"></script>
+    <script src="closebrackets.js"></script>
+    <script src="matchbrackets.js"></script>
+    <script type="module" src="./components/comment-component.js"></script>
     <script type="module" src="./components/document/versioning-component.js"></script>
     <script type="module" src="./components/document/directory-component.js"></script>
     <script src="script.js"></script>
   </head>
 
-  <body onload="init(); getHash(); restrict(); initVersioning(); initDirectory();">
+  <body onload="init(); getHash(); restrict(); initVersioning(); initDirectory(); setTimeout(function(){ loadComments() }, 2000)">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -38,7 +43,7 @@
           response.sendRedirect("/");  
         } %>
       <div class="btn-group">
-        <button class="white-btn" onclick="showElement('share-modal')"> Share </button>
+        <button class="white-btn" onclick="comment()"> Comment </button>
         <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
         <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
       </div>
@@ -69,6 +74,7 @@
     </div>
     <div class="bottom-container">
       <directory-component></directory-component>
+      <div id="comment-container" class="comment-container"></div>
       <div id="firepad-container"></div>
       <versioning-component></versioning-component>
     </div>
@@ -78,13 +84,16 @@
       var extDict = {
         "Python": "py",
         "Javascript": "js",
-        "Java": "java",
-        "C++": "cpp",
+        "text/x-java": "java",
+        "text/x-c++src": "cpp",
         "Go": "go"
       };
 
       var codeMirror = CodeMirror(document.getElementById("firepad-container"), {
         lineNumbers: true,
+        matchBrackets: true,
+        indentWithTabs: true,
+        autoCloseBrackets: true,
         mode: "<%= document.getLanguage().toLowerCase() %>",
         theme: "neo",
       })
@@ -104,6 +113,8 @@
         var firepadRef = getRef();
         codeMirror.setValue('');
         firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
+
+        registerComment();
       }
 
       function restrict() {
@@ -147,7 +158,9 @@
         var xhttp = new XMLHttpRequest();
         xhttp.open("POST", "/Share", true);
         xhttp.onreadystatechange = function() {
-          document.getElementById("share-response").innerHTML = this.responseText;
+          if(xhttp.readyState == 4 && xhttp.status == 200) {
+            document.getElementById("share-response").innerHTML = this.responseText;
+          }
         }
         xhttp.send(formData);
         return false;
@@ -163,6 +176,173 @@
         a.href = window.URL.createObjectURL(blob);
         a.download = '<%= document.getName() %>' + "." + extDict["<%= document.getLanguage() %>"];
         a.click();
+      }
+
+      //Create comment
+      function comment() {
+        var date = new Intl.DateTimeFormat('en-US', {
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        }).format(new Date());
+  
+        var startPos = codeMirror.getCursor(true);
+        var endPos = codeMirror.getCursor(false);
+        endPos.ch += 1;
+
+        for(var i = 0; i < codeMirror.getLine(startPos.line).length; i++)  {
+          if(codeMirror.getLine(startPos.line).charCodeAt(i) > 255) {
+            //deal with multiple comments on same line
+            return;
+          }
+        }
+
+        for(var i = 0; i < codeMirror.getLine(endPos.line).length; i++)  {
+          if(codeMirror.getLine(endPos.line).charCodeAt(i) > 255) {
+            //deal with multiple comments on same line
+            return;
+          }
+        }
+
+        // Create comment getElementsByName
+        document.getElementById('comment-container').innerHTML += '<comment-component name="<%= user.getNickname() %>" hash="<%= (String)request.getAttribute("documentHash") %>" date="' + date + '"></comment-component>';
+        document.querySelector('comment-component').firepad = firepad;
+        document.querySelector('comment-component').codeMirror = codeMirror;
+      }
+
+      // When a comment is submitted, pass the data to the Comment servlet
+      function subComment() {
+        var formData = new FormData(document.getElementById("comment-form"));
+        var startPos = codeMirror.getCursor(true);
+        var endPos = codeMirror.getCursor(false);
+        endPos.ch += 1;
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/Comment", true);
+        xhttp.onreadystatechange = function() {
+          if(xhttp.readyState == 4 && xhttp.status == 200) {
+            codeMirror.setCursor(startPos);
+            firepad.insertEntity('comment', { id: this.responseText, pos: "start" });
+            codeMirror.setCursor(endPos);
+            firepad.insertEntity('comment', { id: this.responseText, pos: "end" });
+            loadComments();         
+          }
+        }
+        xhttp.send(formData);
+        return false;
+      }
+
+      // Generate front end for commenting
+      function loadComments() {
+        var widgetElements = document.getElementsByClassName("CodeMirror-widget");
+        if(widgetElements.length == 0) { return; }
+        var markerList = [];
+        var widgetsFound = 0;
+
+        // Identify start and end points of comments and associate appropriate data
+        for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); lineIndex++) {
+          var line = codeMirror.getLine(lineIndex);
+          for(var charIndex = 0; charIndex < line.length; charIndex++) {
+            if(line.charCodeAt(charIndex) > 255) {
+              // Grab the data inside the entity that was created
+              var widget = widgetElements[widgetsFound].getElementsByTagName("link")[0];
+              markerList.push({line: lineIndex, ch: charIndex, id: widget.getAttribute("data-id"), pos: widget.getAttribute("data-pos")});
+              widgetsFound++;
+            }
+          }
+        }
+
+        // Create comment stying then remove special characters
+        for(var i = 0; i < markerList.length; i++) {
+          if(markerList[i].pos == "end") { continue; }
+          var startMarker = markerList[i];
+          var endMarker = findEndOfComment(startMarker.id, markerList);
+
+          // Grab characters adjacent to endpoints of comment
+          var charAfterLast = codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
+          var charBeforeFirst = codeMirror.getRange({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch});
+
+          // Add a space before and/or after the comment if there isn't one
+          if (charAfterLast != " ") {
+            codeMirror.replaceRange(" " + codeMirror.getRange({line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2}), {line: endMarker.line, ch: endMarker.ch+1}, {line: endMarker.line, ch: endMarker.ch+2});
+          }
+          if (charBeforeFirst != " ") {
+            codeMirror.replaceRange(codeMirror.getRange({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch}) + " ", {line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch});
+            startMarker.ch++;
+            if (startMarker.line == endMarker.line) {
+              endMarker.ch++;
+            }
+          }
+
+          // Highlight the text and give it the id of the associated comment
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id});
+
+          // Make the start and end markers read only so that the user doesn't accidentally delete them
+          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {readOnly: true});
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
+        }
+
+        // Load comments themselves
+        var hash = "<%= (String)request.getAttribute("documentHash") %>"
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/Comment?documentHash=" + hash, true);
+        xhttp.onreadystatechange = function() {
+          if(xhttp.readyState == 4 && xhttp.status == 200) {
+            //get JSON and loop through to create comment componenets
+            var commentList = JSON.parse(this.responseText);
+            console.log(commentList);
+            for(var i = 0; i < commentList.length; i++) {
+              var comment = commentList[i];
+              document.getElementById('comment-container').innerHTML += '<comment-component name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
+              document.querySelector('comment-component').firepad = firepad;
+              document.querySelector('comment-component').codeMirror = codeMirror;
+            }
+          }
+        }
+        xhttp.send();
+      }
+
+      // Finds matching endpoint for comment with given ID
+      function findEndOfComment(id, markerList) {
+        return markerList.find(marker => {
+          return marker.id == id && marker.pos == "end"
+        })
+      }
+
+      // On comment click
+      $(document).on('click','.comment',function() {
+        // Do real stuff
+        console.log("comment clicked");
+      });
+
+      // Register comment entity
+      function registerComment() {
+        var attrs = ['id', 'pos'];
+        firepad.registerEntity('comment', {
+          render: function(info) {
+            var attrs = ['id', 'pos'];
+            var html = '<link ';
+            for(var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              if (attr in info) {
+                html += ' data-' + attr + '="' + info[attr] + '"';
+              }
+            }
+            html += ">";
+            return html;
+          },
+          fromElement: function(element) {
+            var info = {};
+            for(var i = 0; i < attrs.length; i++) {
+              var attr = attrs[i];
+              if (element.hasAttribute(attr)) {
+                info[attr] = element.getAttribute(attr);
+              }
+            }
+            return info;
+          }
+        });
       }
 
       /* Versioning Functions */

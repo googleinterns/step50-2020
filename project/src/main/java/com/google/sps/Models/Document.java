@@ -26,14 +26,16 @@ public class Document {
   long ownerID, folderID;
   ArrayList<Long> editorIDs = new ArrayList<Long>();
   ArrayList<Long> viewerIDs = new ArrayList<Long>();
+  ArrayList<Long> commentIDs = new ArrayList<Long>();
   
-  Document(String name, String language, String hash, ArrayList<Long> editorIDs, ArrayList<Long> viewerIDs, long ownerID, long folderID) {
+  Document(String name, String language, String hash, ArrayList<Long> editorIDs, ArrayList<Long> viewerIDs, ArrayList<Long> commentIDs, long ownerID, long folderID) {
     this.name = name;
     this.language = language;
     this.hash = hash;
     this.ownerID = ownerID;
     this.editorIDs = editorIDs;
     this.viewerIDs = viewerIDs;
+    this.commentIDs = commentIDs;
     this.folderID = folderID;
   }
 
@@ -75,5 +77,9 @@ public class Document {
 
   public long getFolderID() {
     return folderID;
+  }
+
+  public ArrayList<Long> getCommentIDs() {
+    return commentIDs;
   }
 }
