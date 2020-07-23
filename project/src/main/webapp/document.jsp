@@ -452,15 +452,16 @@
 
       // Render documents in the same
       function initDirectory() {
-        fetch('/Folder?folderID=' + '<%= document.getFolderID() %>').then((response) => response.json()).then((documentsData) => {
-          let documents = [];
+        fetch('/Folder?folderID=' + '<%= document.getFolderID() %>').then((response) => response.json()).then((foldersData) => {
+          let folders = {};
           try {
-            documents = JSON.parse(documentsData.documents);
+            folders = JSON.parse(foldersData.folders);
           } catch(err) {
-            documents = JSON.parse(JSON.stringify(documentsData.documents));
+            folders = JSON.parse(JSON.stringify(foldersData.folders));
           }
-          document.querySelector('directory-component').documents = documents;
-          document.querySelector('directory-component').folderName= documentsData.folderName;
+          folders = new Map(Object.entries(folders));
+          document.querySelector('directory-component').folders = folders;
+          document.querySelector('directory-component').folderID = foldersData.folderID;
           document.querySelector('directory-component').docHash = '<%= document.getHash() %>';
         });
       } 
