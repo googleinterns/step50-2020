@@ -68,35 +68,19 @@ export class DocsComponent extends LitElement {
           `
           :
           html`
-            ${this.subfolders.length > 0 ?
-              html`
-                <ul class="folders-list">
-                ${this.subfolders.map((folder) => 
-                  html`
-                    <li @click=${() => this.toggleFolder(folder.name, folder.folderID)}>
-                      <img src="../assets/plain-folder.png" />
-                      <a>
-                        ${folder.name}
-                      </a>
-                    </li>
-                ` 
-                )}
-              </ul>
-              ` : 
-              null
-            }
-            <ul class="docs-list">
+            <ul class="folders-list">
               ${this.subfolders.map((folder) => 
                 html`
-                  <li>
-                    <div>
-                      <a @click=${() => this.toggleFolder(folder.name, folder.folderID)}>
-                        ${folder.name}
-                      </a>
-                    </div>
+                  <li @click=${() => this.toggleFolder(folder.name, folder.folderID)}>
+                    <img src="../assets/plain-folder.png" />
+                    <a>
+                      ${folder.name}
+                    </a>
                   </li>
               ` 
               )}
+            </ul>
+            <ul class="docs-list">
               ${this.documents.map((doc) => 
                 html`
                   <li>
