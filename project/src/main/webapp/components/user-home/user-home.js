@@ -1,7 +1,7 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
-import {MyDocsComponent} from './my-docs-component.js';
-import {FolderComponent} from './folder-component.js';
 import {NavPanel} from './nav-panel.js';
+import {DocsComponent} from './docs-component.js';
+import {getSubfolders} from '../utils.js';
 
 export class UserHome extends LitElement {
   static get properties() {
@@ -24,7 +24,8 @@ export class UserHome extends LitElement {
     super();
     this.validForm = false;
     this.folders = new Map();
-    this.showFolder = 'My Code Docs';
+    this.defaultFolderName = 'My Code Docs'
+    this.showFolder = this.defaultFolderName;
     this.moveDoc = '';
     this.moveDocHash = '';
     this.moveFolder = '';
@@ -46,27 +47,6 @@ export class UserHome extends LitElement {
       this.email = data.userEmail;
     });
   }
-
-  /*getFolders() {
-    fetch('/Folder').then((response) => response.json()).then((foldersData) => {
-      this.defaultFolderID = foldersData.defaultFolderID;
-      this.folders = JSON.parse(JSON.stringify(foldersData.folders));
-    });
-  }
-
-  getDocuments() {
-    this.finishedGetDocuments = false;
-    fetch('/UserHome').then((response) => response.json()).then((documentsData) => {
-      this.nickname = documentsData.nickname;
-      this.email = documentsData.email;
-      try {
-        this.documents = JSON.parse(documentsData.documents);
-      } catch(err) {
-        this.documents = JSON.parse(JSON.stringify(documentsData.documents));
-      }
-      this.finishedGetDocuments = true;
-    });
-  }*/
 
   // Remove shadow DOM so styles are inherited
   createRenderRoot() {
@@ -155,8 +135,6 @@ export class UserHome extends LitElement {
   }
 
   moveFolderModal() {
-    const initialOptions = [{name: "My Code Docs", folderID: this.defaultFolderID}];
-    const folderOptions = initialOptions.concat(Array.from(this.folders.values()));
     return html`
       <div class="modal" id="move-folder-modal">
         <div class="modal-background"></div>
@@ -170,14 +148,16 @@ export class UserHome extends LitElement {
               <p>Select a folder from this list, and your document will 
               appear when you navigate to that folder.</p>
               <div class="move-folder-list">
-                ${folderOptions.map((folder) => html`
-                    <a href="#"
-                      class="dropdown-item"
-                      @click=${() => this.setMoveFolder(folder.name, folder.folderID)}
-                    > 
-                      ${folder.name} 
-                    </a>
-                  `)}
+                <a 
+                  href="#" 
+                  class="dropdown-item"
+                  @click=${() => this.setMoveFolder(this.defaultFolderName, this.defaultFolderID)}
+                >
+                  ${this.defaultFolderName}
+                </a>
+                <ul class="indent">
+                  ${this.showNestedFolders(this.defaultFolderID)}
+                </ul>
               </div>
               <div>
                 <input class="white-input" value=${this.moveFolder} id="move-folder-name" readonly="readonly" />
@@ -190,22 +170,30 @@ export class UserHome extends LitElement {
     `
   }
 
-  getSubfolders(rootFolderID) {
-    let subfolders = [];
-    if (this.folders.size > 0) {
-      const rootFolder = this.folders.get(JSON.stringify(rootFolderID));
-      for(const folderID of rootFolder.folderIDs) {
-        const folder = this.folders.get(JSON.stringify(folderID));
-        subfolders.push(folder);
-      }
-    }
-    return subfolders;
+  showNestedFolders(folderID) {
+    const subfolders = getSubfolders(folderID, this.folders);
+    return html`
+      <ul class="indent">
+        ${subfolders.map((folder) =>
+          html`
+            <a 
+              href="#" 
+              class="dropdown-item"
+              @click=${() => this.setMoveFolder(folder.name, folder.folderID)}
+            >
+              ${folder.name}
+            </a>
+            ${this.showNestedFolders(folder.folderID)}
+          `
+        )}
+      </ul>
+    `
   }
 
   render() {
     if (this.defaultFolderID !== undefined) {
-      const navFolders = this.getSubfolders(this.defaultFolderID);
-      const showSubfolders = this.getSubfolders(this.showFolderID);
+      const navFolders = getSubfolders(this.defaultFolderID, this.folders);
+      const showSubfolders = getSubfolders(this.showFolderID, this.folders);
       const showDocuments = this.folders.get(JSON.stringify(this.showFolderID)).docs;
       return html`
         <div class="columns full-width full-height">
