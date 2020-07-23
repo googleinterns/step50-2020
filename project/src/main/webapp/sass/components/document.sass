@@ -38,6 +38,15 @@
   right : 60px
   top : 84px
 
+.bottom-container
+  display: flex
+  flex-direction: row
+  width: 100%
+  height: 100%
+  background-color: $light-gray
+  border-top: solid 3px $light-gray 
+  justify-content: center
+
 .comment
   background-color: yellow
 
@@ -47,20 +56,47 @@
 
 .versioning
   display: none
-  background-color: white
+  width: 10%
+  height: 100%
+  z-index: 1
+  position: absolute
+  left: 0
+  background-color: $white
+  border: 3px solid $light-gray
+  border-top: none
+  .directory
+    padding: 15px
+    .directory-header
+      display: flex
+      flex-direction: row  
+      img
+        width: 30px
+        height: 23px
+        margin-right: 10px
+
+#firepad-container 
+  width: 70%
+  height: 100%
+  position: absolute
+  left: 10%
+
+versioning-component
+  display: none
+  background-color: $white
   z-index: 1
   width: 20%
   height: 100%
   position: absolute
   right: 0
-  border: 2px solid $medium-gray
+  border: 3px solid $light-gray
+  border-top: none
   flex-direction: column
   .close
     position: absolute
     right: 10px
     top: 10px
   .versioning-header
-    border-bottom: 2px solid $medium-gray
+    border-bottom: 2px solid $light-gray
     height: 50px
     padding: 10px 20px
     .versioning-header-toggle
@@ -69,7 +105,7 @@
       justify-content: space-between
       width: 75%
   .versioning-description
-    border-bottom: 2px solid $medium-gray
+    border-bottom: 2px solid $light-gray
     font-size: $normal - 2
     font-style: italic
     padding: 10px 20px
@@ -97,8 +133,9 @@
     padding: 20px
     width: 100%
   .revisions
-    border-color: $medium-gray
+    border-color: $light-gray
   .commits
     right: 76px
     top: 23px
     position: absolute
+

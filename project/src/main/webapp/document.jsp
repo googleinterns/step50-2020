@@ -27,10 +27,11 @@
     <script src="matchbrackets.js"></script>
     <script type="module" src="./components/comment-component.js"></script>
     <script type="module" src="./components/document/versioning-component.js"></script>
+    <script type="module" src="./components/document/directory-component.js"></script>
     <script src="script.js"></script>
   </head>
 
-  <body onload="init(); getHash(); restrict(); initializeVersioning(); setTimeout(function(){ loadComments() }, 2000)">
+  <body onload="init(); getHash(); restrict(); initVersioning(); initDirectory(); setTimeout(function(){ loadComments() }, 2000)">
     <div class="header">
       <% User user = null;
          Document document = null;
@@ -43,21 +44,21 @@
         } %>
       <div class="btn-group">
         <button class="white-btn" onclick="comment()"> Comment </button>
-        <button class="white-btn" onclick="showModal()"> Share </button>
         <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
         <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
       </div>
     </div>
     <div class="toolbar">
+      <button onclick="toggleElement('directory-component')">Directory</button>
       <toolbar-component onclick="changeTheme()"></toolbar-component>
-      <button class="version-btn" onclick="showVersioning()">Versioning</button>
+      <button class="version-btn" onclick="toggleElement('versioning-component')">Versioning</button>
     </div>
     <div class="modal full-width full-height" id="share-modal">
       <div class="modal-background"></div>
       <div class="modal-card">
         <header class="modal-card-head">
           <p class="modal-card-title">Share</p>
-          <button class="delete" aria-label="close" onClick="hideModal()" />
+          <button class="delete" aria-label="close" onclick="hideElement('share-modal')" />
         </header>
         <section class="modal-card-body">
           <form id="share-form" onsubmit="return share()">
@@ -71,9 +72,12 @@
         </section>
       </div>
     </div>
-    <versioning-component onclose="init()"></versioning-component>
-    <div id="comment-container" class="comment-container"></div>
-    <div id="firepad-container"></div>
+    <div class="bottom-container">
+      <directory-component></directory-component>
+      <div id="comment-container" class="comment-container"></div>
+      <div id="firepad-container"></div>
+      <versioning-component></versioning-component>
+    </div>
     
     <script>
       //Map holding file types of different languages
@@ -94,16 +98,6 @@
         theme: "neo",
       })
       var firepad;
-
-      function showModal() {
-        let modal = document.getElementById("share-modal");
-        modal.className = "modal is-active";
-      }
-
-      function hideModal() {
-        let modal = document.getElementById("share-modal");
-        modal.className = "modal";
-      }
 
       function init() {
         //// Initialize Firebase.
@@ -172,7 +166,7 @@
         return false;
       }
 
-      //Downloads current doument
+      // Downloads current doument
       function download() {
         var text = firepad.getText();
 
@@ -352,21 +346,20 @@
       }
 
       /* Versioning Functions */
-      var groupedRevisions = [];
-      var revisionsMap = new Map();
-      var commits = [];
-      function showVersioning() {
-        document.querySelector('versioning-component').firepad = firepad;
-        document.querySelector('versioning-component').codeMirror = codeMirror;
-        document.querySelector('versioning-component').groupedRevisions = groupedRevisions;
-        document.querySelector('versioning-component').revisionsMap = revisionsMap;
-        document.querySelector('versioning-component').commits = commits;
-        document.querySelector('.versioning').style.display = 'flex';
-      }
-
-      async function initializeVersioning() {
+      let groupedRevisions = [];
+      let revisionsMap = new Map();
+      let commits = [];
+      let versioningComponent = document.querySelector('versioning-component');
+      async function initVersioning() {
         await getRevisions();
         await getCommits();
+        versioningComponent.firepad = firepad;
+        versioningComponent.codeMirror = codeMirror;
+        versioningComponent.groupedRevisions = groupedRevisions;
+        versioningComponent.revisionsMap = revisionsMap;
+        versioningComponent.commits = commits;
+        versioningComponent.addEventListener('close', function() { hideElement('versioning-component'); });
+        versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); init(); });
       }
 
       async function getRevisions() {
@@ -395,9 +388,9 @@
           const prevRevisionGroup = groupedRevisions[0];
           prevRevisionGroup.hash = hash;
         }
-        document.querySelector('versioning-component').groupedRevisions = groupedRevisions;
-        document.querySelector('versioning-component').revisionsMap = revisionsMap;
-        document.querySelector('versioning-component').requestUpdate();
+        versioningComponent.groupedRevisions = groupedRevisions;
+        versioningComponent.revisionsMap = revisionsMap;
+        versioningComponent.requestUpdate();
       }
 
       async function getCommits() {
@@ -411,9 +404,24 @@
       function addCommit(hash, value) {
         value.hash = hash;
         commits.unshift(value);
-        document.querySelector('versioning-component').commits = commits;
-        document.querySelector('versioning-component').requestUpdate();
+        versioningComponent.commits = commits;
+        versioningComponent.requestUpdate();
       }
+
+      // Render documents in the same
+      function initDirectory() {
+        fetch('/Folder?folderID=' + '<%= document.getFolderID() %>').then((response) => response.json()).then((documentsData) => {
+          let documents = [];
+          try {
+            documents = JSON.parse(documentsData.documents);
+          } catch(err) {
+            documents = JSON.parse(JSON.stringify(documentsData.documents));
+          }
+          document.querySelector('directory-component').documents = documents;
+          document.querySelector('directory-component').folderName= documentsData.folderName;
+          document.querySelector('directory-component').docHash = '<%= document.getHash() %>';
+        });
+      } 
 
     </script>
   </body>

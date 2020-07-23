@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /*
-  Called by the user-home.html page.
+  Called by the user-home.js and document.jsp.
   GET request returns folder's documents if folderID is provided, 
   else returns list of folders.
   POST request creates folder.
@@ -25,13 +25,30 @@ import javax.servlet.http.HttpServletResponse;
 public class FolderServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String url = request.getRequestURL().toString();
+    String folderIDString = (String) request.getParameter("folderID");
     long userID = (long) request.getSession(false).getAttribute("userID");
-    ArrayList<Folder> folders = Database.getUsersFolders(userID);
-    HashMap<String, Object> foldersData = new HashMap<String, Object>();
-    foldersData.put("defaultFolderID", Folder.DEFAULT_FOLDER_ID);
-    foldersData.put("folders", folders);
-    response.setContentType("application/json;");
-    response.getWriter().println(convertToJson(foldersData));
+    if (folderIDString == null || folderIDString.length() == 0) {
+      ArrayList<Folder> folders = Database.getUsersFolders(userID);
+      HashMap<String, Object> foldersData = new HashMap<String, Object>();
+      foldersData.put("defaultFolderID", Folder.DEFAULT_FOLDER_ID);
+      foldersData.put("folders", folders);
+      response.setContentType("application/json;");
+      response.getWriter().println(convertToJson(foldersData));
+    } else {
+      long folderID = Long.parseLong(folderIDString);
+      if (folderID != Folder.DEFAULT_FOLDER_ID) {
+        User user = Database.getUserByID(userID);
+        Folder folder = Database.getFolderByID(folderID);
+        String documentsJSON = convertToJson(Database.getFoldersDocuments(folderID));
+        HashMap<String, Object> documentsData = new HashMap<String, Object>();
+        documentsData.put("folderID", folderID);
+        documentsData.put("folderName", folder.getName());
+        documentsData.put("documents", documentsJSON);
+        response.setContentType("application/json;");
+        response.getWriter().println(convertToJson(documentsData));
+      }
+    }
   }
 
   // Accepts any Java Object, where each {key: value}
