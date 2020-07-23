@@ -52,7 +52,7 @@ public class UserHomeServlet extends HttpServlet {
     Database.createDocument(name, language, docHash, userID);
     String folderID = request.getParameter("folderID");
     if (isValidFolderID(folderID)) {
-      Database.addDocumentToFolder(docHash, Long.parseLong(folderID));
+      Database.moveDocumentToFolder(docHash, Long.parseLong(folderID));
     }
     response.sendRedirect("/Document?documentHash=" + docHash);
   }
@@ -60,7 +60,6 @@ public class UserHomeServlet extends HttpServlet {
   private boolean isValidFolderID(String folderID) {
     return folderID != null 
       && !folderID.equals("undefined") 
-      && folderID.length() > 0
-      && Long.parseLong(folderID) != Folder.DEFAULT_FOLDER_ID;
+      && folderID.length() > 0;
   }
 }

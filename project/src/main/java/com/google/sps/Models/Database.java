@@ -372,6 +372,7 @@ public class Database {
     Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
     ArrayList<String> docHashes = getListProperty(folderEntity, "docHashes");
     docHashes.remove(docHash);
+    folderEntity.setProperty("docHashes", docHashes);
     getDatastore().put(folderEntity);
   }
   
