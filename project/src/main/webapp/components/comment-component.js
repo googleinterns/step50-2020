@@ -39,7 +39,7 @@ export class CommentComponent extends LitElement {
           <p class="comment-date">${this.date}</p>
           <input type="hidden" id="commentDate" name="commentDate" value="${this.date}">
           <div class="comment-delete">
-            <button class="delete"></button>
+            <button class="delete" onclick="deleteComment(${String(this.commentID)}); return false"></button>
           </div>
           ${this.exists ? html`<p class ="comment-text">${this.text}</p>`:
             html`<input type="textarea"
