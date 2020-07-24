@@ -425,4 +425,14 @@ public class Database {
     }
     return commentObjects;
   }
+
+  // Deletes comment on a document
+  public static void deleteComment(String hash, long commentID) {
+    Query query = new Query("Document").addFilter("hash", Query.FilterOperator.EQUAL, hash);
+    Entity docEntity = getDatastore().prepare(query).asSingleEntity();
+    ArrayList<Long> comments = getListProperty(docEntity, "commentIDs");
+    comments.remove(commentID);
+    docEntity.setProperty("commentIDs", comments);
+    getDatastore().put(docEntity);
+  }
 }
