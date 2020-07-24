@@ -213,7 +213,7 @@
 
       // When a comment is submitted, pass the data to the Comment servlet
       function subComment() {
-        var formData = new FormData(document.getElementById("comment-form"));
+        var formData = new FormData(document.getElementById("comment-form-0"));
         var startPos = codeMirror.getCursor(true);
         var endPos = codeMirror.getCursor(false);
         endPos.ch += 1;
@@ -235,10 +235,12 @@
 
       // Generate front end for commenting
       function loadComments() {
+        document.getElementById('comment-container').innerHTML = '';
         var widgetElements = document.getElementsByClassName("CodeMirror-widget");
         if(widgetElements.length == 0) { return; }
         var markerList = [];
         var widgetsFound = 0;
+        var comments = "";
 
         // Identify start and end points of comments and associate appropriate data
         for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); lineIndex++) {
@@ -279,25 +281,25 @@
           codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id});
 
           // Make the start and end markers read only so that the user doesn't accidentally delete them
-          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {readOnly: true});
-          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
+          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id, readOnly: true});
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {className: "comment " + startMarker.id, readOnly: true});
         }
 
         // Load comments themselves
-        var hash = "<%= (String)request.getAttribute("documentHash") %>"
+        var hash = "<%= (String)request.getAttribute("documentHash") %>";
         var xhttp = new XMLHttpRequest();
         xhttp.open("GET", "/Comment?documentHash=" + hash, true);
         xhttp.onreadystatechange = function() {
           if(xhttp.readyState == 4 && xhttp.status == 200) {
             //get JSON and loop through to create comment componenets
             var commentList = JSON.parse(this.responseText);
-            console.log(commentList);
+            document.getElementById('comment-container').innerHTML = '';
             for(var i = 0; i < commentList.length; i++) {
               var comment = commentList[i];
-              document.getElementById('comment-container').innerHTML += '<comment-component name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
+              document.getElementById('comment-container').innerHTML += '<comment-component commentID="' + comment.commentID + '" name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
               document.querySelector('comment-component').firepad = firepad;
               document.querySelector('comment-component').codeMirror = codeMirror;
-            }
+            }     
           }
         }
         xhttp.send();
@@ -311,10 +313,35 @@
       }
 
       // On comment click
-      $(document).on('click','.comment',function() {
+      $(document).on('click','.comment',function(event) {
         // Do real stuff
-        console.log("comment clicked");
+        var element = event.target.className;
+        console.log(element);
       });
+
+      function deleteComment(id) {
+        var markerList = codeMirror.getAllMarks();
+        markerList.forEach(marker => {
+          if(marker.className == ("comment " + id + "\n")) {
+            if (marker.readOnly == true) {
+              marker.readOnly = false;
+              codeMirror.replaceRange(" ", marker.find().from, marker.find().to);
+            }
+            marker.clear();
+          }
+        });
+
+        //removeElement(id);
+        var hash = "<%= (String)request.getAttribute("documentHash") %>";
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/DeleteComment?commentID=" + id + "&documentHash=" + hash, true);
+        xhttp.onreadystatechange = function() {
+          if(xhttp.readyState == 4 && xhttp.status == 200) {
+            loadComments();
+          }
+        }
+        xhttp.send(); 
+      }
 
       // Register comment entity
       function registerComment() {
@@ -422,6 +449,11 @@
           document.querySelector('directory-component').docHash = '<%= document.getHash() %>';
         });
       } 
+        
+      // Removes an element from the document
+      function removeElement(commentID) {
+        var element = $("[commentid='" + commentID + "']").remove();
+      }
 
     </script>
   </body>

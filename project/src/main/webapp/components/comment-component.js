@@ -10,7 +10,8 @@ export class CommentComponent extends LitElement {
       date : {type: String},
       hash : {type: String},
       text : {type: String},
-      exists : {type: Boolean}
+      exists : {type: Boolean},
+      commentID: {type: Number},
     };
   }
 
@@ -22,6 +23,7 @@ export class CommentComponent extends LitElement {
     this.hash = '';
     this.text = '';
     this.exists = false;
+    this.commentID = 0;
   }
 
   // Remove shadow DOM so styles are inherited
@@ -31,7 +33,7 @@ export class CommentComponent extends LitElement {
 
   render() {
     return html` 
-      <form class="comment-group" id="comment-form" onsubmit="return subComment()">
+      <form class="comment-group" id=${"comment-form-" + this.commentID} onsubmit="return subComment()">
         <div class="comment-div">
           <p class="comment-name">${this.name}</p>
           <p class="comment-date">${this.date}</p>
