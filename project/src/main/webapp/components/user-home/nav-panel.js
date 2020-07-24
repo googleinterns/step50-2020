@@ -19,7 +19,6 @@ export class NavPanel extends LitElement {
 
   constructor() {
     super();
-    this.languages = ['C++', 'Go', 'Python', 'Java', 'Javascript'];
     this.docHash = '';
     this.placeholder = 'Write a document title...';
     this.formDisabled = '';
@@ -93,7 +92,7 @@ export class NavPanel extends LitElement {
           />
           <dropdown-element 
             @change=${(e) => this.validateDropdown(e)}
-            .options="${this.languages}" 
+            .options=${this.languages} 
             name="language"
             label="Languages"
             styling="full-width"
@@ -114,7 +113,7 @@ export class NavPanel extends LitElement {
           <div class="folder-btn-group">
             <panel-element 
               @change=${(e) => this.setPanelValue(e)}
-              .options="${this.folders}" 
+              .options=${this.folders} 
               label="Folders"
               styling="full-width">
             </panel-element>

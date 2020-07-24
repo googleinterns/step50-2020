@@ -4,6 +4,7 @@ export class DocsComponent extends LitElement {
   static get properties() {
     return {
       documents: {type: Object},
+      languages: {type: Object},
       nickname: {type: String},
       email: {type: String},
       title: {type: String},
@@ -67,7 +68,7 @@ export class DocsComponent extends LitElement {
                         ${doc.name}
                       </a>
                       <span class="tag tag-bordered">
-                        ${doc.language}
+                        ${this.languages[doc.language]}
                       </span>
                     </div>
                     <div>

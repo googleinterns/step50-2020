@@ -35,6 +35,7 @@ export class UserHome extends LitElement {
     this.email = '';
     this.finishedGetDocuments = false;
     this.defaultFolderID = -1;
+    this.languages = {'text/x-c++src':'C++', 'Go':'Go', 'Python':'Python', 'text/x-java':'Java', 'Javascript':'Javascript'};
   }
 
   firstUpdated() {
@@ -194,6 +195,7 @@ export class UserHome extends LitElement {
             @toggle-folder=${(e) => this.changeDocsComponent(e)}
             @new-folder="${() => this.showModal("new-folder-modal")}"
             .folders=${this.folders}
+            .languages=${Object.values(this.languages)}
             defaultFolderID=${this.defaultFolderID}
           >
           </nav-panel>
@@ -201,7 +203,8 @@ export class UserHome extends LitElement {
         <div class="column is-three-quarters">
           <docs-component
             @move-folder=${(e) => this.setMoveDoc(e)}
-            .documents="${this.documents}"
+            .documents=${this.documents}
+            .languages=${this.languages}
             nickname=${this.nickname}
             email=${this.email}
             title=${this.showFolder}
