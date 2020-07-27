@@ -33,7 +33,7 @@ export class NavPanel extends LitElement {
   }
 
   createDocument() {
-    fetch('.../api-key.json')
+    fetch('../../../api-key.json')
       .then(response => response.json())
       .then(config => { 
         if (firebase.apps.length === 0) {

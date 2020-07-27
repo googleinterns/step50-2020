@@ -109,7 +109,7 @@
             var firepadRef = getRef();
             codeMirror.setValue('');
             firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
-            initializeVersioning();
+            initVersioning();
             registerComment();
           });
       }
