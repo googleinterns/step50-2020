@@ -1,14 +1,13 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
-import {MyDocsComponent} from './my-docs-component.js';
-import {FolderComponent} from './folder-component.js';
 import {NavPanel} from './nav-panel.js';
+import {DocsComponent} from './docs-component.js';
+import {getSubfolders} from '../utils.js';
 
 export class UserHome extends LitElement {
   static get properties() {
     return {
       validForm: {type: Boolean},
-      folders: {type: Array},
-      documents: {type: Array},
+      folders: {type: Object},
       showFolder: {type: String},
       showFolderID: {type: Number},
       moveDoc: {type: String},
@@ -17,7 +16,6 @@ export class UserHome extends LitElement {
       moveFolderID: {type: Number},
       nickname: {type: String},
       email: {type: String},
-      finishedGetDocuments: {type: Boolean},
       defaultFolderID: {type: Number},
     };
   }
@@ -25,41 +23,28 @@ export class UserHome extends LitElement {
   constructor() {
     super();
     this.validForm = false;
-    this.folders = [];
-    this.documents = [];
-    this.showFolder = 'My Code Docs';
+    this.folders = new Map();
+    this.defaultFolderName = 'My Code Docs'
+    this.showFolder = this.defaultFolderName;
     this.moveDoc = '';
     this.moveDocHash = '';
     this.moveFolder = '';
     this.nickname = '';
     this.email = '';
-    this.finishedGetDocuments = false;
-    this.defaultFolderID = -1;
   }
 
   firstUpdated() {
-    this.getFolders();
-    this.getDocuments();
+    this.getData();
   }
 
-  getFolders() {
-    fetch('/Folder').then((response) => response.json()).then((foldersData) => {
-      this.defaultFolderID = foldersData.defaultFolderID;
-      this.folders = JSON.parse(JSON.stringify(foldersData.folders));
-    });
-  }
-
-  getDocuments() {
-    this.finishedGetDocuments = false;
-    fetch('/UserHome').then((response) => response.json()).then((documentsData) => {
-      this.nickname = documentsData.nickname;
-      this.email = documentsData.email;
-      try {
-        this.documents = JSON.parse(documentsData.documents);
-      } catch(err) {
-        this.documents = JSON.parse(JSON.stringify(documentsData.documents));
-      }
-      this.finishedGetDocuments = true;
+  getData() {
+    fetch('/Folder').then((response) => response.json()).then((data) => {
+      this.defaultFolderID = data.defaultFolderID;
+      this.showFolderID = this.defaultFolderID;
+      this.folders = JSON.parse(JSON.stringify(data.folders));
+      this.folders = new Map(Object.entries(this.folders));
+      this.nickname = data.userNickname;
+      this.email = data.userEmail;
     });
   }
 
@@ -85,13 +70,14 @@ export class UserHome extends LitElement {
   }
   
   createFolderRequest(e) {
+    console.log(this.showFolderID);
     const form = e.target;
     const input = form.querySelector('#name');
     const name = input.value;
     var xhttp = new XMLHttpRequest();
     xhttp.open("POST", "/Folder", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("folderName=" + name);
+    xhttp.send("folderName=" + name + "&parentFolderID=" + this.showFolderID);
     this.hideModal("new-folder-modal");
   }
 
@@ -118,7 +104,7 @@ export class UserHome extends LitElement {
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("docHash=" + this.moveDocHash + "&folderID=" + this.moveFolderID);
     this.hideModal("move-folder-modal");
-    this.getDocuments();
+    this.getData();
   }
 
   createFolderModal() {
@@ -149,8 +135,6 @@ export class UserHome extends LitElement {
   }
 
   moveFolderModal() {
-    const initialOptions = [{name: "My Code Docs", folderID: this.defaultFolderID}];
-    const folderOptions = initialOptions.concat(this.folders);
     return html`
       <div class="modal" id="move-folder-modal">
         <div class="modal-background"></div>
@@ -160,18 +144,20 @@ export class UserHome extends LitElement {
             <button class="delete" aria-label="close" @click="${() => this.hideModal("move-folder-modal")}" />
           </header>
           <section class="modal-card-body">
-            <form id="new-folder-form" @submit="${this.moveFolderRequest}">
+            <form id="move-folder-form" @submit="${this.moveFolderRequest}">
               <p>Select a folder from this list, and your document will 
               appear when you navigate to that folder.</p>
               <div class="move-folder-list">
-                ${folderOptions.map((folder) => html`
-                    <a href="#" 
-                      class="dropdown-item"
-                      @click=${() => this.setMoveFolder(folder.name, folder.folderID)}
-                    > 
-                      ${folder.name} 
-                    </a>
-                  `)}
+                <a 
+                  href="#" 
+                  class="dropdown-item"
+                  @click=${() => this.setMoveFolder(this.defaultFolderName, this.defaultFolderID)}
+                >
+                  ${this.defaultFolderName}
+                </a>
+                <ul class="indent">
+                  ${this.showNestedFolders(this.defaultFolderID)}
+                </ul>
               </div>
               <div>
                 <input class="white-input" value=${this.moveFolder} id="move-folder-name" readonly="readonly" />
@@ -184,35 +170,63 @@ export class UserHome extends LitElement {
     `
   }
 
-  render() {
+  showNestedFolders(folderID) {
+    const subfolders = getSubfolders(folderID, this.folders);
     return html`
-      <div class="columns full-width full-height">
-        ${this.createFolderModal()}
-        ${this.moveFolderModal()}
-        <div class="column is-one-quarter nav-panel">
-          <nav-panel
-            @toggle-folder=${(e) => this.changeDocsComponent(e)}
-            @new-folder="${() => this.showModal("new-folder-modal")}"
-            .folders=${this.folders}
-            defaultFolderID=${this.defaultFolderID}
-          >
-          </nav-panel>
-        </div>
-        <div class="column is-three-quarters">
-          <docs-component
-            @move-folder=${(e) => this.setMoveDoc(e)}
-            .documents="${this.documents}"
-            nickname=${this.nickname}
-            email=${this.email}
-            title=${this.showFolder}
-            folderID=${this.showFolderID ? this.showFolderID : this.defaultFolderID}
-            finishedGetDocuments=${this.finishedGetDocuments}
-          >
-          </folder-component>
-          }
-        </div>
-      </div>      
-    `;
+      <ul class="indent">
+        ${subfolders.map((folder) =>
+          html`
+            <a 
+              href="#" 
+              class="dropdown-item"
+              @click=${() => this.setMoveFolder(folder.name, folder.folderID)}
+            >
+              ${folder.name}
+            </a>
+            ${this.showNestedFolders(folder.folderID)}
+          `
+        )}
+      </ul>
+    `
+  }
+
+  render() {
+    if (this.defaultFolderID !== undefined) {
+      const navFolders = getSubfolders(this.defaultFolderID, this.folders);
+      const showSubfolders = getSubfolders(this.showFolderID, this.folders);
+      const showDocuments = this.folders.get(JSON.stringify(this.showFolderID)).docs;
+      return html`
+        <div class="columns full-width full-height">
+          ${this.createFolderModal()}
+          ${this.moveFolderModal()}
+          <div class="column is-one-quarter nav-panel">  
+            <nav-panel
+              @toggle-folder=${(e) => this.changeDocsComponent(e)}
+              @new-folder="${() => this.showModal("new-folder-modal")}"
+              .folders=${navFolders}
+              defaultFolderID=${this.defaultFolderID}
+              value=${this.showFolder}
+              valueID=${this.showFolderID}
+            >
+            </nav-panel>
+          </div>
+          <div class="column is-three-quarters">
+            <docs-component
+              @move-folder=${(e) => this.setMoveDoc(e)}
+              @toggle-folder=${(e) => this.changeDocsComponent(e)}
+              .documents="${showDocuments}"
+              .subfolders="${showSubfolders}"
+              nickname=${this.nickname}
+              email=${this.email}
+              title=${this.showFolder}
+              folderID=${this.showFolderID}
+              defaultFolderID=${this.defaultFolderID}
+            >
+            </docs-component>
+          </div>
+        </div>      
+      `;
+    }
   }
 }
 customElements.define('user-home', UserHome);
