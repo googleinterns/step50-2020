@@ -25,16 +25,15 @@ export class DirectoryComponent extends LitElement {
   }
 
   shortenText(text) {
-    const maxLength = 15;
+    const maxLength = 13;
     if (text.length > maxLength) {
-      return text.slice(0, 15) + "..."
+      return text.slice(0, maxLength) + "..."
     } else {
       return text;
     }
   }
 
   showNestedFolders(folderID) {
-    console.log(this.folders);
     const subfolders = getSubfolders(folderID, this.folders);
     const documents = this.folders.get(JSON.stringify(folderID)).docs;
     return html`
@@ -44,7 +43,7 @@ export class DirectoryComponent extends LitElement {
           html`
             <li>
               <a @click=${() => this.loadDocument(doc.hash)}>
-                ${this.shortenText(doc.name)}
+                └─${this.shortenText(doc.name)}
               </a>
             </li>
           ` :
