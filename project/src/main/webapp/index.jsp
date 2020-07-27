@@ -46,18 +46,15 @@
           <div class="columns">
             <div class="column has-text-centered">
               <img src='./assets/max.jpg' />
-              <p>Max Friedman</p>
-              <p>Insert text here</p>
+              <p><b>Max Friedman</b></p>
             </div>
             <div class="column has-text-centered">
               <img src='./assets/grace.jpg' />
-              <p>Grace Luo</p>
-              <p>Hi! I'm Grace...</p>
+              <p><b>Grace Luo</b></p>
             </div>
             <div class="column has-text-centered">
               <img src='./assets/tino.jpg' />
-              <p>Valentino Dore</p>
-              <p>Insert text here</p>
+              <p><b>Valentino Dore</b></p>
             </div>
           </div>
         </div>
