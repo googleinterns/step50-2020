@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/mode/python/python.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/mode/clike/clike.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
     <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
     <link rel="stylesheet" href="https://codemirror.net/theme/ayu-dark.css" />
@@ -236,6 +237,7 @@
       // Generate front end for commenting
       function loadComments() {
         document.getElementById('comment-container').innerHTML = '';
+
         var widgetElements = document.getElementsByClassName("CodeMirror-widget");
         if(widgetElements.length == 0) { return; }
         var markerList = [];
@@ -293,13 +295,15 @@
           if(xhttp.readyState == 4 && xhttp.status == 200) {
             //get JSON and loop through to create comment componenets
             var commentList = JSON.parse(this.responseText);
-            document.getElementById('comment-container').innerHTML = '';
-            for(var i = 0; i < commentList.length; i++) {
-              var comment = commentList[i];
-              document.getElementById('comment-container').innerHTML += '<comment-component commentID="' + comment.commentID + '" name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
-              document.querySelector('comment-component').firepad = firepad;
-              document.querySelector('comment-component').codeMirror = codeMirror;
-            }     
+            if ($("*#comment-container").children().length != commentList.length) {
+              document.getElementById('comment-container').innerHTML = '';
+              for(var i = 0; i < commentList.length; i++) {
+                var comment = commentList[i];
+                document.getElementById('comment-container').innerHTML += '<comment-component commentID="' + comment.commentID + '" name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
+                document.querySelector('comment-component').firepad = firepad;
+                document.querySelector('comment-component').codeMirror = codeMirror;
+              }     
+            }
           }
         }
         xhttp.send();
@@ -321,21 +325,47 @@
       });
 
       // On click not on comment
-       $(document).on('click', "html", function(event) {
-          console.log(event.target);
-          if($(event.target).closest('.comment').length == 0 && $(event.target).closest('comment-component').length == 0) {
-            $('.highlight-comment').removeClass("highlight-comment");
-          }
-        });
+      $(document).on('click', "html", function(event) {
+        if($(event.target).closest('.comment').length == 0 && $(event.target).closest('comment-component').length == 0) {
+          $('.highlight-comment').removeClass("highlight-comment");
+        }
+      });
 
-      // Removes an element from the document
+      //Removes an element from the document
       function toggleCommentHighlight(commentID) {
-        console.log(commentID);
         $('.highlight-comment').removeClass("highlight-comment");
         var commentDiv = $("[commentid='" + commentID + "']").find(".comment-div");
         commentDiv.addClass("highlight-comment");
-        console.log(commentDiv);
       }
+
+      
+      /*var lastTimeCommentsLoaded = new Date();
+      //When comment is created by another person
+      $(document).on('DOMNodeInserted', function(event) {
+        if($(event.target).hasClass("CodeMirror-widget") && $(event.target).children('link').length > 0) {
+          var currentDate = new Date();
+          if(currentDate.getTime() - lastTimeCommentsLoaded.getTime() > 5000) {
+            console.log(currentDate.getTime() - lastTimeCommentsLoaded.getTime());
+            console.log($(event.target).children('link').first());
+            lastTimeCommentsLoaded = currentDate;
+            loadComments();
+          }
+        }
+      }); 
+
+      // When comment is deleted by another person
+      $(document).on('DOMNodeRemoved', function(event) {
+        if($(event.target).hasClass("CodeMirror-widget") && $(event.target).children('link').length > 0) {
+          var currentDate = new Date();
+          if(currentDate.getTime() - lastTimeCommentsLoaded.getTime() > 5000) {
+            console.log(currentDate.getTime() - lastTimeCommentsLoaded.getTime());
+            console.log($(event.target).children('link').first());
+            lastTimeCommentsLoaded = currentDate;
+            deleteComment($(event.target).children('link').first().attr("data-id"));
+          }
+        }
+      });*/
+
 
       function deleteComment(id) {
         var markerList = codeMirror.getAllMarks();
