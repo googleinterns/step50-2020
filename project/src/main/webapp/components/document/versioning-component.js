@@ -32,6 +32,7 @@ export class VersioningComponent extends LitElement {
 
   close(hasReverted) {
     codeMirror.options.readOnly = false;
+    console.log(hasReverted);
     if (hasReverted) {
       this.dispatchEvent(new CustomEvent('close'));
     } else {
