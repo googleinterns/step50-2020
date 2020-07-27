@@ -107,15 +107,18 @@
             if (firebase.apps.length === 0) {
               firebase.initializeApp(config);
             }
-            loadFirepad();
+            loadFirepad(false);
             initVersioning();
             registerComment();
           });
       }
 
-      function loadFirepad() {
+      function loadFirepad(dispose) {
         var firepadRef = getRef();
         codeMirror.setValue('');
+        if (dispose) {
+          firepad.dispose();
+        }
         firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
       }
 
@@ -406,7 +409,7 @@
         versioningComponent.revisionsMap = revisionsMap;
         versioningComponent.commits = commits;
         versioningComponent.addEventListener('close', function() { hideElement('versioning-component'); });
-        versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); loadFirepad(); });
+        versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); loadFirepad(true); });
       }
 
       async function getRevisions() {
