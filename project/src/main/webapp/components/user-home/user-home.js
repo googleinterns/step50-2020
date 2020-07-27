@@ -31,6 +31,7 @@ export class UserHome extends LitElement {
     this.moveFolder = '';
     this.nickname = '';
     this.email = '';
+    this.languages = {'text/x-c++src':'C++', 'Go':'Go', 'Python':'Python', 'text/x-java':'Java', 'Javascript':'Javascript'};
   }
 
   firstUpdated() {
@@ -70,7 +71,6 @@ export class UserHome extends LitElement {
   }
   
   createFolderRequest(e) {
-    console.log(this.showFolderID);
     const form = e.target;
     const input = form.querySelector('#name');
     const name = input.value;
@@ -204,6 +204,7 @@ export class UserHome extends LitElement {
               @toggle-folder=${(e) => this.changeDocsComponent(e)}
               @new-folder="${() => this.showModal("new-folder-modal")}"
               .folders=${navFolders}
+              .languages=${Object.values(this.languages)}
               defaultFolderID=${this.defaultFolderID}
               value=${this.showFolder}
               valueID=${this.showFolderID}
@@ -215,6 +216,7 @@ export class UserHome extends LitElement {
               @move-folder=${(e) => this.setMoveDoc(e)}
               @toggle-folder=${(e) => this.changeDocsComponent(e)}
               .documents="${showDocuments}"
+              .languages=${this.languages}
               .subfolders="${showSubfolders}"
               nickname=${this.nickname}
               email=${this.email}
