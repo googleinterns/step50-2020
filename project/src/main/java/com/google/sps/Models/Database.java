@@ -122,7 +122,7 @@ public class Database {
     getDatastore().put(userEntity);
 
     long userID = userEntity.getKey().getId();
-    Folder defaultFolder = createFolder("default", userID);
+    Folder defaultFolder = createFolder("Root", userID);
     long defaultFolderID = defaultFolder.getFolderID();
     userEntity.setProperty("defaultFolderID", defaultFolderID);
     getDatastore().put(userEntity);

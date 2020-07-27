@@ -29,12 +29,19 @@ public class FolderServlet extends HttpServlet {
     String folderIDString = (String) request.getParameter("folderID");
     long userID = (long) request.getSession(false).getAttribute("userID");
     User user = Database.getUserByID(userID);
-    HashMap<Long, Folder> folders = Database.getFoldersMap(user.getDefaultFolderID());
     HashMap<String, Object> foldersData = new HashMap<String, Object>();
-    foldersData.put("defaultFolderID", user.getDefaultFolderID());
-    foldersData.put("folders", folders);
-    foldersData.put("userNickname", user.getNickname());
-    foldersData.put("userEmail", user.getEmail());
+    if (folderIDString == null || folderIDString.length() == 0) {
+      HashMap<Long, Folder> folders = Database.getFoldersMap(user.getDefaultFolderID());
+      foldersData.put("defaultFolderID", user.getDefaultFolderID());
+      foldersData.put("folders", folders);
+      foldersData.put("userNickname", user.getNickname());
+      foldersData.put("userEmail", user.getEmail());
+    } else {
+      long folderID = Long.parseLong(folderIDString);
+      HashMap<Long, Folder> folders = Database.getFoldersMap(folderID);
+      foldersData.put("folderID", folderID);
+      foldersData.put("folders", folders);
+    }
     response.setContentType("application/json;");
     response.getWriter().println(convertToJson(foldersData));
   }
