@@ -1,7 +1,7 @@
 import {html, LitElement} from 'https://unpkg.com/@polymer/lit-element/lit-element.js?module';
-import {DropdownElement} from './dropdown-element.js';
+import {DropdownElement} from '../dropdown-element.js';
 
-export class ToolbarComponent extends LitElement {
+export class ThemesComponent extends LitElement {
   static get properties() {
     return {
       themes: {type: Array},
@@ -32,4 +32,4 @@ export class ToolbarComponent extends LitElement {
     `;
   }
 }
-customElements.define('toolbar-component', ToolbarComponent);
+customElements.define('themes-component', ThemesComponent);

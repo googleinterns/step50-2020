@@ -71,6 +71,7 @@ export class UserHome extends LitElement {
   }
   
   createFolderRequest(e) {
+    console.log(this.showFolderID);
     const form = e.target;
     const input = form.querySelector('#name');
     const name = input.value;
@@ -216,8 +217,8 @@ export class UserHome extends LitElement {
               @move-folder=${(e) => this.setMoveDoc(e)}
               @toggle-folder=${(e) => this.changeDocsComponent(e)}
               .documents="${showDocuments}"
-              .languages=${this.languages}
               .subfolders="${showSubfolders}"
+              .languages=${this.languages}
               nickname=${this.nickname}
               email=${this.email}
               title=${this.showFolder}
