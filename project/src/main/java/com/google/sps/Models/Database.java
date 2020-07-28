@@ -279,8 +279,8 @@ public class Database {
       addUserForDocument(hash, userID, permissions);
     }
 
-    if (!getFoldersDocHashes(folderID).contains(hash)) {
-      User user = getUserByID(userID);
+    User user = getUserByID(userID);
+    if (!getFoldersDocHashes(user.getDefaultFolderID()).contains(hash)) {
       addDocumentToFolder(hash, user.getDefaultFolderID());
     }
 
