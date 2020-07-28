@@ -330,7 +330,6 @@
 
       // On click not on comment
        $(document).on('click', "html", function(event) {
-          console.log(event.target);
           if($(event.target).closest('.comment').length == 0 && $(event.target).closest('comment-component').length == 0) {
             $('.highlight-comment').removeClass("highlight-comment");
           }
@@ -338,11 +337,9 @@
 
       // Removes an element from the document
       function toggleCommentHighlight(commentID) {
-        console.log(commentID);
         $('.highlight-comment').removeClass("highlight-comment");
         var commentDiv = $("[commentid='" + commentID + "']").find(".comment-div");
         commentDiv.addClass("highlight-comment");
-        console.log(commentDiv);
       }
 
       function deleteComment(id) {
