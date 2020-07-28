@@ -113,14 +113,16 @@
           });
       }
 
-      function loadFirepad(dispose) {
-        var firepadRef = getRef();
-        codeMirror.setValue('');
-        if (dispose) {
-          firepad.dispose();
+      function loadFirepad(suppressHistory) {
+        if (suppressHistory) {
+          firepad.firebaseAdapter_.ready = false;
+          codeMirror.setValue('');
+          firepad.firebaseAdapter_.ready = true;
         }
+        var firepadRef = getRef();
         firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
       }
+
 
       function restrict() {
         <%if (document.getViewerIDs().contains(user.getUserID())) {
