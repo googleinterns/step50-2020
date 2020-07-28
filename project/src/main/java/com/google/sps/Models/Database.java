@@ -280,6 +280,8 @@ public class Database {
 
     addDocumentForUser(hash, userID);
     addUserForDocument(hash, userID, permissions);
+    User user = getUserByID(userID);
+    addDocumentToFolder(hash, user.getDefaultFolderID());
 
     return true;
   }
@@ -354,9 +356,7 @@ public class Database {
     getDatastore().put(parentFolderEntity);
   }
 
-  public static void moveDocumentToFolder(String docHash, long folderID) {
-    long oldFolderID = setDocumentsFolder(docHash, folderID);
-    removeDocumentFromFolder(docHash, oldFolderID);
+  public static void addDocumentToFolder(String docHash, long folderID) {
     Query query = new Query("Folder").addFilter(
       "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
     Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
@@ -364,6 +364,12 @@ public class Database {
     docHashes.add(docHash);
     folderEntity.setProperty("docHashes", docHashes);
     getDatastore().put(folderEntity);
+  }
+
+  public static void moveDocumentToFolder(String docHash, long folderID) {
+    long oldFolderID = setDocumentsFolder(docHash, folderID);
+    removeDocumentFromFolder(docHash, oldFolderID);
+    addDocumentToFolder(docHash, folderID);
   }
 
   private static void removeDocumentFromFolder(String docHash, long folderID) {
