@@ -21,13 +21,13 @@
     <script src="https://firepad.io/releases/v1.5.9/firepad.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
     <link rel="stylesheet" href="main.css" />
-    <script type="module" src="./components/toolbar-component.js"></script>
-    <script type="module" src="./components/share-component.js"></script>
     <script src="closebrackets.js"></script>
     <script src="matchbrackets.js"></script>
     <script type="module" src="./components/comment-component.js"></script>
     <script type="module" src="./components/document/versioning-component.js"></script>
     <script type="module" src="./components/document/directory-component.js"></script>
+    <script type="module" src="./components/document/themes-component.js"></script>
+    <script type="module" src="./components/document/share-component.js"></script>
     <script src="script.js"></script>
   </head>
 
@@ -43,15 +43,16 @@
           response.sendRedirect("/");  
         } %>
       <div class="btn-group">
+        <button class="primary-blue-btn" onclick="showElement('share-modal')"> Share </button>
         <button class="white-btn" onclick="comment()"> Comment </button>
-        <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
-        <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
       </div>
     </div>
     <div class="toolbar">
+      <a href="/user-home.jsp"><button id="demo-button"> Home </button></a>
       <button onclick="toggleElement('directory-component')">Directory</button>
-      <toolbar-component onclick="changeTheme()"></toolbar-component>
+      <themes-component onclick="changeTheme()"></themes-component>
       <button class="version-btn" onclick="toggleElement('versioning-component')">Versioning</button>
+      <button class="plain-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
     </div>
     <div class="modal full-width full-height" id="share-modal">
       <div class="modal-background"></div>
