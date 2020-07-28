@@ -26,7 +26,12 @@ public class SharingServlet extends HttpServlet {
     String permissions = request.getParameter("permissions");
     PrintWriter out = response.getWriter();
 
-    if(Database.shareDocument(hash, email, permissions)) {
+    long ownerID = (long) request.getSession(false).getAttribute("userID");
+    User owner = Database.getUserByID(ownerID);
+
+    if(owner.getEmail() == email) {
+      out.println("You cannot share a document with yourself. Please try again.");
+    } else if(Database.shareDocument(hash, email, permissions)) {
       out.println("Document shared with " + email);
     } else {
       out.println("User specified does not exist, invitation email has been sent");
