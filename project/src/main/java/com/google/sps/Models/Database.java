@@ -274,14 +274,15 @@ public class Database {
 
     long userID = userEntity.getKey().getId();
     
-    if(getUsersDocumentsHashes(userID).contains(hash)) {
-      return true;
+    if(!getUsersDocumentsHashes(userID).contains(hash)) {
+      addDocumentForUser(hash, userID);
+      addUserForDocument(hash, userID, permissions);
     }
 
-    addDocumentForUser(hash, userID);
-    addUserForDocument(hash, userID, permissions);
-    User user = getUserByID(userID);
-    addDocumentToFolder(hash, user.getDefaultFolderID());
+    if (!getFoldersDocHashes(folderID).contains(hash)) {
+      User user = getUserByID(userID);
+      addDocumentToFolder(hash, user.getDefaultFolderID());
+    }
 
     return true;
   }
@@ -392,9 +393,13 @@ public class Database {
   }
   
   public static ArrayList<Document> getFoldersDocuments(long folderID) {
-    Folder folder = getFolderByID(folderID);
-    ArrayList<String> docHashes = folder.getDocHashes();
+    ArrayList<String> docHashes = getFoldersDocHashes(folderID);
     return getDocumentsByHash(docHashes);
+  }
+
+  public static ArrayList<String> getFoldersDocHashes(long folderID) {
+    Folder folder = getFolderByID(folderID);
+    return folder.getDocHashes();
   }
 
   public static HashMap<Long, Folder> getFoldersMap(long parentFolderID) {
