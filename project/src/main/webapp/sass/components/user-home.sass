@@ -51,6 +51,32 @@
 
 .docs-component
   padding: 150px 150px 150px 100px
+  .folders-list
+    display: flex
+    flex-direction: row
+    background-color: $light-gray
+    margin-bottom: 30px
+    height: 80px
+    padding: 20px
+    max-width: 100%
+    overflow-x: scroll
+    img
+      width: 35px
+      height: 28px
+    li
+      margin-right: 20px
+      cursor: pointer
+      display: flex
+      flex-shrink: 0
+      align-items: center
+      white-space: nowrap
+      background-color: $white
+      border-radius: $curved-box
+      border: solid 1px $medium-gray
+      padding: 5px
+      a
+        color: $charcoal
+        margin-left: 5px
   .docs-list
     li:last-of-type
       border-bottom: 1px solid $medium-gray     

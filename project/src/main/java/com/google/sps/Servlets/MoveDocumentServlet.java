@@ -18,6 +18,6 @@ public class MoveDocumentServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     String docHash = request.getParameter("docHash");
     long folderID = Long.parseLong(request.getParameter("folderID"));
-    Database.addDocumentToFolder(docHash, folderID);
+    Database.moveDocumentToFolder(docHash, folderID);
   }
 }

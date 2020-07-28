@@ -27,9 +27,8 @@
     <script src="matchbrackets.js"></script>
     <script type="module" src="./components/comment-component.js"></script>
     <script type="module" src="./components/document/versioning-component.js"></script>
-    <script type="module" src="./components/comment-component.js"></script>
-    <script src="script.js"></script>
     <script type="module" src="./components/document/directory-component.js"></script>
+    <script src="script.js"></script>
   </head>
 
   <body onload="init(); getHash(); restrict(); initVersioning(); initDirectory(); setTimeout(function(){ loadComments() }, 2000)">
@@ -44,7 +43,7 @@
           response.sendRedirect("/");  
         } %>
       <div class="btn-group">
-        <button class="white-btn" onclick="showElement('share-modal')"> Share </button>
+        <button class="white-btn" onclick="comment()"> Comment </button>
         <a href="/user-home.jsp"><button class="primary-blue-btn" id="demo-button"> Return home </button></a>
         <button class="white-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
       </div>
@@ -75,6 +74,7 @@
     </div>
     <div class="bottom-container">
       <directory-component></directory-component>
+      <div id="comment-container" class="comment-container"></div>
       <div id="firepad-container"></div>
       <versioning-component></versioning-component>
     </div>
@@ -232,10 +232,12 @@
 
       // Generate front end for commenting
       function loadComments() {
+        document.getElementById('comment-container').innerHTML = '';
         var widgetElements = document.getElementsByClassName("CodeMirror-widget");
         if(widgetElements.length == 0) { return; }
         var markerList = [];
         var widgetsFound = 0;
+        var comments = "";
 
         // Identify start and end points of comments and associate appropriate data
         for(var lineIndex = 0; lineIndex < codeMirror.lineCount(); lineIndex++) {
@@ -276,25 +278,25 @@
           codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id});
 
           // Make the start and end markers read only so that the user doesn't accidentally delete them
-          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {readOnly: true});
-          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {readOnly: true});
+          codeMirror.markText({line: endMarker.line, ch: endMarker.ch}, {line: endMarker.line, ch: endMarker.ch+2}, {className: "comment " + startMarker.id, readOnly: true});
+          codeMirror.markText({line: startMarker.line, ch: startMarker.ch-1}, {line: startMarker.line, ch: startMarker.ch+1}, {className: "comment " + startMarker.id, readOnly: true});
         }
 
         // Load comments themselves
-        var hash = "<%= (String)request.getAttribute("documentHash") %>"
+        var hash = "<%= (String)request.getAttribute("documentHash") %>";
         var xhttp = new XMLHttpRequest();
         xhttp.open("GET", "/Comment?documentHash=" + hash, true);
         xhttp.onreadystatechange = function() {
           if(xhttp.readyState == 4 && xhttp.status == 200) {
             //get JSON and loop through to create comment componenets
-            var commentList = this.responseText;
+            var commentList = JSON.parse(this.responseText);
             document.getElementById('comment-container').innerHTML = '';
             for(var i = 0; i < commentList.length; i++) {
               var comment = commentList[i];
-              document.getElementById('comment-container').innerHTML += '<comment-component commentID="' +  comment.commentID + '" name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
+              document.getElementById('comment-container').innerHTML += '<comment-component commentID="' + comment.commentID + '" name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
               document.querySelector('comment-component').firepad = firepad;
               document.querySelector('comment-component').codeMirror = codeMirror;
-            }
+            }     
           }
         }
         xhttp.send();
@@ -308,10 +310,53 @@
       }
 
       // On comment click
-      $(document).on('click','.comment',function() {
+      $(document).on('click','.comment',function(event) {
         // Do real stuff
-        console.log("comment clicked");
+        var className = event.target.className;
+        var classList = className.split(" ");
+        var commentID = classList[classList.length - 1].slice(0, -1);
+        toggleCommentHighlight(commentID);
       });
+
+      // On click not on comment
+       $(document).on('click', "html", function(event) {
+          console.log(event.target);
+          if($(event.target).closest('.comment').length == 0 && $(event.target).closest('comment-component').length == 0) {
+            $('.highlight-comment').removeClass("highlight-comment");
+          }
+        });
+
+      // Removes an element from the document
+      function toggleCommentHighlight(commentID) {
+        console.log(commentID);
+        $('.highlight-comment').removeClass("highlight-comment");
+        var commentDiv = $("[commentid='" + commentID + "']").find(".comment-div");
+        commentDiv.addClass("highlight-comment");
+        console.log(commentDiv);
+      }
+
+      function deleteComment(id) {
+        var markerList = codeMirror.getAllMarks();
+        markerList.forEach(marker => {
+          if(marker.className == ("comment " + id + "\n")) {
+            if (marker.readOnly == true) {
+              marker.readOnly = false;
+              codeMirror.replaceRange(" ", marker.find().from, marker.find().to);
+            }
+            marker.clear();
+          }
+        });
+
+        var hash = "<%= (String)request.getAttribute("documentHash") %>";
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/DeleteComment?commentID=" + id + "&documentHash=" + hash, true);
+        xhttp.onreadystatechange = function() {
+          if(xhttp.readyState == 4 && xhttp.status == 200) {
+            loadComments();
+          }
+        }
+        xhttp.send(); 
+      }
 
       // Register comment entity
       function registerComment() {
@@ -419,7 +464,6 @@
           document.querySelector('directory-component').docHash = '<%= document.getHash() %>';
         });
       } 
-
     </script>
   </body>
 </html>

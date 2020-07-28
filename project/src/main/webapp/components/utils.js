@@ -46,3 +46,15 @@ export function revisionFromId(revisionId) {
     return -1; 
   }
 }
+
+export function getSubfolders(rootFolderID, folders) {
+  let subfolders = [];
+  if (folders.size > 0) {
+    const rootFolder = folders.get(JSON.stringify(rootFolderID));
+    for(const folderID of rootFolder.folderIDs) {
+      const folder = folders.get(JSON.stringify(folderID));
+      subfolders.push(folder);
+    }
+  }
+  return subfolders;
+}

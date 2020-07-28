@@ -5,26 +5,21 @@ import java.util.List;
 
 public class User {
   String email, nickname;
-  long userID;
+  long userID, defaultFolderID;
   ArrayList<String> docHashes;
-  ArrayList<Long> folderIDs;
   
   User(String email, String nickname, long userID, ArrayList<String> docHashes) {
     this.email = email;
     this.nickname = nickname;
     this.userID = userID;
     this.docHashes = docHashes;
-    this.folderIDs = new ArrayList<Long>();
   }
 
-  User(String email, String nickname, long userID, ArrayList<String> docHashes, ArrayList<Long> folderIDs) {
-    this.email = email;
-    this.nickname = nickname;
-    this.userID = userID;
-    this.docHashes = docHashes;
-    this.folderIDs = folderIDs;
+  User(String email, String nickname, long userID, ArrayList<String> docHashes, long defaultFolderID) {
+    this(email, nickname, userID, docHashes);
+    this.defaultFolderID = defaultFolderID;
   }
-
+  
   public long getUserID() {
     return userID;
   }
@@ -41,7 +36,7 @@ public class User {
     return docHashes;
   }
 
-  public ArrayList<Long> getFolderIDs() {
-    return folderIDs;
+  public long getDefaultFolderID() {
+    return defaultFolderID;
   }
 }

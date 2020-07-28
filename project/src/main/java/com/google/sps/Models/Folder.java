@@ -3,17 +3,17 @@ package com.google.sps.models;
 import java.util.ArrayList;
 
 public class Folder {
-  public static long DEFAULT_FOLDER_ID = -1;
   String name;
   long folderID;
   ArrayList<String> docHashes;
-  ArrayList<Long> userIDs;
+  ArrayList<Document> docs;
+  ArrayList<Long> folderIDs;
   
-  Folder(String name, long folderID, ArrayList<String> docHashes, ArrayList<Long> userIDs) {
+  Folder(String name, long folderID, ArrayList<String> docHashes, ArrayList<Long> folderIDs) {
     this.name = name;
     this.folderID = folderID;
     this.docHashes = docHashes;
-    this.userIDs = userIDs;
+    this.folderIDs = folderIDs;
   }
 
   public String getName() {
@@ -28,7 +28,15 @@ public class Folder {
     return docHashes;
   }
 
-  public ArrayList<Long> getUserIDs() {
-    return userIDs;
+  public ArrayList<Long> getFolderIDs() {
+    return folderIDs;
+  }
+
+  public void setDocs(ArrayList<Document> docs) {
+    this.docs = docs;
+  }
+
+  public ArrayList<Document> getDocs() {
+    return docs;
   }
 }
