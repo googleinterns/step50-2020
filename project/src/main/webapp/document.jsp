@@ -51,7 +51,7 @@
       <a href="/user-home.jsp"><button id="demo-button"> Home </button></a>
       <button onclick="toggleElement('directory-component')">Directory</button>
       <themes-component onclick="changeTheme()"></themes-component>
-      <button class="version-btn" onclick="toggleElement('versioning-component')">Versioning</button>
+      <button class="version-btn" onclick="toggleElementReload('versioning-component')">Versioning</button>
       <button class="plain-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
     </div>
     <div class="modal full-width full-height" id="share-modal">
@@ -107,22 +107,12 @@
             if (firebase.apps.length === 0) {
               firebase.initializeApp(config);
             }
-            loadFirepad(false);
+            var firepadRef = getRef();
+            firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
             initVersioning();
             registerComment();
           });
       }
-
-      function loadFirepad(suppressHistory) {
-        if (suppressHistory) {
-          firepad.firebaseAdapter_.ready = false;
-          codeMirror.setValue('');
-          firepad.firebaseAdapter_.ready = true;
-        }
-        var firepadRef = getRef();
-        firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
-      }
-
 
       function restrict() {
         <%if (document.getViewerIDs().contains(user.getUserID())) {
@@ -408,7 +398,7 @@
         versioningComponent.revisionsMap = revisionsMap;
         versioningComponent.commits = commits;
         versioningComponent.addEventListener('close', function() { hideElement('versioning-component'); });
-        versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); loadFirepad(true); });
+        versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); window.location.reload(true);});
       }
 
       async function getRevisions() {
