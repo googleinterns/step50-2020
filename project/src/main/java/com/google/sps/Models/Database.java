@@ -274,12 +274,15 @@ public class Database {
 
     long userID = userEntity.getKey().getId();
     
-    if(getUsersDocumentsHashes(userID).contains(hash)) {
-      return true;
+    if(!getUsersDocumentsHashes(userID).contains(hash)) {
+      addDocumentForUser(hash, userID);
+      addUserForDocument(hash, userID, permissions);
     }
 
-    addDocumentForUser(hash, userID);
-    addUserForDocument(hash, userID, permissions);
+    User user = getUserByID(userID);
+    if (!getFoldersDocHashes(user.getDefaultFolderID()).contains(hash)) {
+      addDocumentToFolder(hash, user.getDefaultFolderID());
+    }
 
     return true;
   }
@@ -354,9 +357,7 @@ public class Database {
     getDatastore().put(parentFolderEntity);
   }
 
-  public static void moveDocumentToFolder(String docHash, long folderID) {
-    long oldFolderID = setDocumentsFolder(docHash, folderID);
-    removeDocumentFromFolder(docHash, oldFolderID);
+  public static void addDocumentToFolder(String docHash, long folderID) {
     Query query = new Query("Folder").addFilter(
       "__key__", Query.FilterOperator.EQUAL, KeyFactory.createKey("Folder", folderID));
     Entity folderEntity = getDatastore().prepare(query).asSingleEntity();
@@ -364,6 +365,12 @@ public class Database {
     docHashes.add(docHash);
     folderEntity.setProperty("docHashes", docHashes);
     getDatastore().put(folderEntity);
+  }
+
+  public static void moveDocumentToFolder(String docHash, long folderID) {
+    long oldFolderID = setDocumentsFolder(docHash, folderID);
+    removeDocumentFromFolder(docHash, oldFolderID);
+    addDocumentToFolder(docHash, folderID);
   }
 
   private static void removeDocumentFromFolder(String docHash, long folderID) {
@@ -386,9 +393,13 @@ public class Database {
   }
   
   public static ArrayList<Document> getFoldersDocuments(long folderID) {
-    Folder folder = getFolderByID(folderID);
-    ArrayList<String> docHashes = folder.getDocHashes();
+    ArrayList<String> docHashes = getFoldersDocHashes(folderID);
     return getDocumentsByHash(docHashes);
+  }
+
+  public static ArrayList<String> getFoldersDocHashes(long folderID) {
+    Folder folder = getFolderByID(folderID);
+    return folder.getDocHashes();
   }
 
   public static HashMap<Long, Folder> getFoldersMap(long parentFolderID) {

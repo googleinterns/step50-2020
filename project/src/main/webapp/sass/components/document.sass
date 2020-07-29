@@ -8,26 +8,30 @@
   font-family: roboto
   font-size: 30px
   font-weight: bold
-  padding-left: 20px
+  padding-left: 30px
   padding-top: 5px
 
 /* the toolbar with operations */
 .toolbar
   height: 33px
-  padding: 5px
-  background: white
-  border: 1px solid white
+  margin: 5px
   padding-left: 20px
+  background: white
+  display: flex
+  button
+    @extend .text-btn
+    font-size: 14px !important
+    padding: 0 10px
+  i
+    color: $charcoal
 
 .btn-group 
   float: right
   display: flex
   justify-content: space-between
-  width: 290px
+  width: 160px
   margin-right: 25px
   margin-top: 5px
-  a
-    margin-top: -10px
 
 .permissions
   position: absolute
@@ -39,7 +43,7 @@
 
 .comment-container
   position: absolute
-  right: 240px
+  right: 40px
 
 .bottom-container
   display: flex
