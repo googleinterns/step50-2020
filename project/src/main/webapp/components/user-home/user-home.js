@@ -119,7 +119,7 @@ export class UserHome extends LitElement {
         </header>
         <section class="modal-card-body">
           <form id="new-folder-form" @submit="${(e) => this.createFolderRequest(e)}">
-            <input @change=${(e) => this.validateForm(e)}  id="name" type="name" placeholder="Write a new folder name..."/> 
+            <input @input=${(e) => this.validateForm(e)}  id="name" type="name" placeholder="Write a new folder name..."/> 
             ${this.validForm ? 
               html`
                 <input type="submit" value="Create" class="primary-blue-btn">

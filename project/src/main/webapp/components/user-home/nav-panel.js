@@ -83,7 +83,7 @@ export class NavPanel extends LitElement {
         this.createDocument()}>
           <input type="hidden" name="folderID" value=${this.valueID}>
           <input 
-            @change=${(e) => this.validateTitle(e)} 
+            @input=${(e) => this.validateTitle(e)} 
             name="title" id="new-doc-title" 
             class="white-input full-width" 
             placeholder=${this.placeholder}
