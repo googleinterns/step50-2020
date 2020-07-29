@@ -38,7 +38,7 @@ export class NavPanel extends LitElement {
         if (firebase.apps.length === 0) {
           firebase.initializeApp(config);
         }
-        this.docHash= this.createDocHash();
+        this.docHash = this.createDocHash();
       });
   }
 
@@ -79,7 +79,7 @@ export class NavPanel extends LitElement {
     const disableSubmit = this.validTitle && this.validDropdown ? false: true;
     return html`
       <div>
-        <form class="new-doc-group" id="new-doc-form" action="/UserHome" method="POST" onsubmit=${
+        <form class="new-doc-group" id="new-doc-form" action="/UserHome" method="POST" target="_blank" onsubmit=${
         this.createDocument()}>
           <input type="hidden" name="folderID" value=${this.valueID}>
           <input 
