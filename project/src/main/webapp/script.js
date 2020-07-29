@@ -26,3 +26,16 @@ function toggleElement(id) {
     showElement(id);
   }
 }
+
+function toggleElementReload(id) {
+  let element = document.querySelector(id);
+  if (element === null) {
+    element = document.getElementById(id);
+  }
+  if (element.className.includes('is-active')) {
+    hideElement(id);
+    window.location.reload(true);
+  } else {
+    showElement(id);
+  }
+}

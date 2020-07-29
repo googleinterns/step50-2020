@@ -51,7 +51,7 @@
       <a href="/user-home.jsp"><button id="demo-button"> Home </button></a>
       <button onclick="toggleElement('directory-component')">Directory</button>
       <themes-component onclick="changeTheme()"></themes-component>
-      <button class="version-btn" onclick="toggleElement('versioning-component')">Versioning</button>
+      <button class="version-btn" onclick="toggleElementReload('versioning-component')">Versioning</button>
       <button class="plain-btn" onclick="download()"> <i class="fa fa-download" aria-hidden="true"></i> </button>
     </div>
     <div class="modal full-width full-height" id="share-modal">
@@ -108,7 +108,6 @@
               firebase.initializeApp(config);
             }
             var firepadRef = getRef();
-            codeMirror.setValue('');
             firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
             initVersioning();
             registerComment();
@@ -321,7 +320,6 @@
 
       // On click not on comment
        $(document).on('click', "html", function(event) {
-          console.log(event.target);
           if($(event.target).closest('.comment').length == 0 && $(event.target).closest('comment-component').length == 0) {
             $('.highlight-comment').removeClass("highlight-comment");
           }
@@ -329,11 +327,9 @@
 
       // Removes an element from the document
       function toggleCommentHighlight(commentID) {
-        console.log(commentID);
         $('.highlight-comment').removeClass("highlight-comment");
         var commentDiv = $("[commentid='" + commentID + "']").find(".comment-div");
         commentDiv.addClass("highlight-comment");
-        console.log(commentDiv);
       }
 
       function deleteComment(id) {
@@ -402,7 +398,7 @@
         versioningComponent.revisionsMap = revisionsMap;
         versioningComponent.commits = commits;
         versioningComponent.addEventListener('close', function() { hideElement('versioning-component'); });
-        versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); init(); });
+        versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); window.location.reload(true);});
       }
 
       async function getRevisions() {
