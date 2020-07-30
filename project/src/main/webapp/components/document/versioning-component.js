@@ -78,9 +78,11 @@ export class VersioningComponent extends LitElement {
     this.lockLink(hash);
     const documentSnapshot = await this.createDocumentSnapshot(hash);
     this.codeMirror.setValue('');
-    // Avoid assertion error from firebaseAdapter when permanently reverting to commit
-    this.firepad.firebaseAdapter_.document_ = documentSnapshot;
+    const firebaseAdapter = this.getFirebaseAdapter();
     this.firepad.editorAdapter_.applyOperation(documentSnapshot);
+    this.firepad.setHtml(this.firepad.getHtml());
+    firebaseAdapter.document_ = documentSnapshot;
+    //firebaseAdapter.sendOperation(documentSnapshot);
     if (close) {
       this.close(true);
     }
@@ -191,7 +193,7 @@ export class VersioningComponent extends LitElement {
             class="has-text-weight-bold white-input full-width" 
             placeholder="Commit name"
             id="commit-name" 
-            @change=${(e) => this.validateCommitName(e)}
+            @input=${(e) => this.validateCommitName(e)}
           />
           <input 
             class="white-input full-width" 
