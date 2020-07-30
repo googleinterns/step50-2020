@@ -397,12 +397,7 @@
         versioningComponent.groupedRevisions = groupedRevisions;
         versioningComponent.revisionsMap = revisionsMap;
         versioningComponent.commits = commits;
-        versioningComponent.addEventListener('close', 
-          function() { 
-            hideElement('versioning-component'); 
-            // Create newline to force commit to be saved in Firebase
-            //codeMirror.replaceRange('\n', CodeMirror.Pos(codeMirror.lastLine())); 
-          });
+        versioningComponent.addEventListener('close', function() { hideElement('versioning-component'); });
         versioningComponent.addEventListener('temp', function() { hideElement('versioning-component'); window.location.reload(true);});
       }
 

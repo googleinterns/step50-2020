@@ -61,28 +61,27 @@ export class VersioningComponent extends LitElement {
       const revision = Firepad.TextOperation.fromJSON(revisionData.o);
       document = document.compose(revision);
     }
-    return document;
+    let documentText = '';
+    document.toJSON().map((element) => {
+      if ((typeof element === 'string' || element instanceof String) && element != '') {
+        documentText = documentText.concat(element);
+      }
+    })
+    return documentText;
   }
 
   async temporaryRevert(hash) {
     const firebaseAdapter = this.getFirebaseAdapter();
     firebaseAdapter.ready_ = false;
-    const prevSnapshot = firebaseAdapter.document_;
     await this.revert(hash, false);
-    firebaseAdapter.document_ = prevSnapshot;
     firebaseAdapter.ready_ = true;
     codeMirror.options.readOnly = 'nocursor';
   }
  
   async revert(hash, close) {
     this.lockLink(hash);
-    const documentSnapshot = await this.createDocumentSnapshot(hash);
-    this.codeMirror.setValue('');
-    const firebaseAdapter = this.getFirebaseAdapter();
-    this.firepad.editorAdapter_.applyOperation(documentSnapshot);
-    this.firepad.setHtml(this.firepad.getHtml());
-    firebaseAdapter.document_ = documentSnapshot;
-    //firebaseAdapter.sendOperation(documentSnapshot);
+    const documentText = await this.createDocumentSnapshot(hash);
+    this.firepad.setText(documentText);
     if (close) {
       this.close(true);
     }
