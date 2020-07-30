@@ -39,4 +39,12 @@ public class Folder {
   public ArrayList<Document> getDocs() {
     return docs;
   }
+
+  public void setFolders(ArrayList<Folder> folders) {
+    this.folders = folders;
+  }
+
+  public ArrayList<Folder> getFolders() {
+    return folders;
+  }
 }
