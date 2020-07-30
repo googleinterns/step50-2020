@@ -26,9 +26,14 @@ public class CommentServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String hash = request.getParameter("documentHash");
     ArrayList<Comment> comments = Database.getDocumentComments(hash);
+    ArrayList<CommentWithName> commentsWithName = new ArrayList<CommentWithName>();
+
+    for(Comment c : comments) {
+      commentsWithName.add(new CommentWithName(c));
+    }
     
     response.setContentType("application/json;");
-    response.getWriter().println(convertToJson(comments));
+    response.getWriter().println(convertToJson(commentsWithName));
   }
 
   @Override
@@ -50,5 +55,17 @@ public class CommentServlet extends HttpServlet {
     Gson gson = new Gson();
     String json = gson.toJson(obj);
     return json;
+  }
+}
+
+class CommentWithName {
+  String userName, data, date;
+  long commentID;
+
+  public CommentWithName(Comment original) {
+    data = original.getData();
+    date = original.getDate();
+    commentID = original.getCommentID();
+    userName = Database.getUserByID(original.getUserID()).getNickname();
   }
 }

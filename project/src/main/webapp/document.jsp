@@ -171,7 +171,7 @@
         var a = document.createElement('a');
         var blob = new Blob([text], {'type':contentType});
         a.href = window.URL.createObjectURL(blob);
-        a.download = '<%= document.getName() %>' + "." + extDict["<%= document.getLanguage() %>"];
+        a.download = '<%= document.getName().replace("\'", "\\\'") %>' + "." + extDict["<%= document.getLanguage() %>"];
         a.click();
       }
 
@@ -293,7 +293,7 @@
             document.getElementById('comment-container').innerHTML = '';
             for(var i = 0; i < commentList.length; i++) {
               var comment = commentList[i];
-              document.getElementById('comment-container').innerHTML += '<comment-component commentID="' + comment.commentID + '" name="'+ comment.userID +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
+              document.getElementById('comment-container').innerHTML += '<comment-component commentID="' + comment.commentID + '" name="'+ comment.userName +'" date="' + comment.date + '" text="'+ comment.data +'" exists="true"></comment-component>';
               document.querySelector('comment-component').firepad = firepad;
               document.querySelector('comment-component').codeMirror = codeMirror;
             }     
@@ -311,7 +311,6 @@
 
       // On comment click
       $(document).on('click','.comment',function(event) {
-        // Do real stuff
         var className = event.target.className;
         var classList = className.split(" ");
         var commentID = classList[classList.length - 1].slice(0, -1);
