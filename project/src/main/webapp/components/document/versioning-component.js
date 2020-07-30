@@ -61,13 +61,15 @@ export class VersioningComponent extends LitElement {
       const revision = Firepad.TextOperation.fromJSON(revisionData.o);
       document = document.compose(revision);
     }
-    return document.toJSON();
+    return document;
   }
 
   async temporaryRevert(hash) {
-    let firebaseAdapter = this.getFirebaseAdapter();
+    const firebaseAdapter = this.getFirebaseAdapter();
     firebaseAdapter.ready_ = false;
+    const prevSnapshot = firebaseAdapter.document_;
     await this.revert(hash, false);
+    firebaseAdapter.document_ = prevSnapshot;
     firebaseAdapter.ready_ = true;
     codeMirror.options.readOnly = 'nocursor';
   }
@@ -75,11 +77,10 @@ export class VersioningComponent extends LitElement {
   async revert(hash, close) {
     this.lockLink(hash);
     const documentSnapshot = await this.createDocumentSnapshot(hash);
-    if (documentSnapshot.length > 0) {
-      firepad.setText(documentSnapshot[documentSnapshot.length - 1]);
-    } else {
-      firepad.setText(documentSnapshot);
-    }
+    this.codeMirror.setValue('');
+    // Avoid assertion error from firebaseAdapter when permanently reverting to commit
+    this.firepad.firebaseAdapter_.document_ = documentSnapshot;
+    this.firepad.editorAdapter_.applyOperation(documentSnapshot);
     if (close) {
       this.close(true);
     }
